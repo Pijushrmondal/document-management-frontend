@@ -10,6 +10,8 @@ import AppLayout from "./components/layout/AppLayout";
 // Pages
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import Documents from "./pages/Documents";
+import DocumentDetails from "./pages/DocumentDetails";
 import NotFound from "./pages/NotFound";
 
 // Components
@@ -36,6 +38,28 @@ function App() {
             <ProtectedRoute>
               <AppLayout>
                 <Dashboard />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/documents"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Documents />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/documents/:id"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <DocumentDetails />
               </AppLayout>
             </ProtectedRoute>
           }

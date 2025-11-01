@@ -7,6 +7,7 @@ import loggerMiddleware from './middleware/loggerMiddleware';
 // Import reducers
 import authReducer from './slices/authSlice';
 import uiReducer from './slices/uiSlice';
+import documentReducer from './slices/documentSlice';
 
 /**
  * Configure Redux store
@@ -15,8 +16,8 @@ const store = configureStore({
     reducer: {
         auth: authReducer,
         ui: uiReducer,
+        documents: documentReducer,
         // Add more reducers as we create them
-        // documents: documentReducer,
         // tags: tagReducer,
         // actions: actionReducer,
         // tasks: taskReducer,
@@ -28,11 +29,11 @@ const store = configureStore({
         getDefaultMiddleware({
             serializableCheck: {
                 // Ignore these action types for serializable check
-                ignoredActions: ['ui/openModal'],
+                ignoredActions: ['ui/openModal', 'documents/uploadDocument/pending'],
                 // Ignore these field paths in all actions
-                ignoredActionPaths: ['payload.timestamp', 'meta.arg'],
+                ignoredActionPaths: ['payload.timestamp', 'meta.arg', 'payload.file'],
                 // Ignore these paths in the state
-                ignoredPaths: ['ui.modals'],
+                ignoredPaths: ['ui.modals', 'documents.uploadProgress'],
             },
         })
             .concat(errorMiddleware)
