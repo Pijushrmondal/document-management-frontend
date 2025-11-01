@@ -4,6 +4,9 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectIsAuthenticated } from "./store/slices/authSlice";
 
+// Layout
+import AppLayout from "./components/layout/AppLayout";
+
 // Pages
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -26,12 +29,14 @@ function App() {
           }
         />
 
-        {/* Protected Routes */}
+        {/* Protected Routes with Layout */}
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <AppLayout>
+                <Dashboard />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
