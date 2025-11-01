@@ -114,7 +114,7 @@ function DocumentList({ documents, loading }) {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
-                    {formatFileSize(doc.size)}
+                    {formatFileSize(doc.fileSize || doc.size)}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">

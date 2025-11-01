@@ -189,7 +189,10 @@ const documentSlice = createSlice({
             })
             .addCase(fetchDocuments.fulfilled, (state, action) => {
                 state.loading = false;
-                state.documents = action.payload.docs || action.payload;
+                // Handle both 'documents' and 'docs' property from API
+                const documentsArray = action.payload.documents || action.payload.docs ||
+                    (Array.isArray(action.payload) ? action.payload : []);
+                state.documents = documentsArray;
                 state.pagination = {
                     page: action.payload.page || 1,
                     limit: action.payload.limit || 20,
@@ -242,7 +245,10 @@ const documentSlice = createSlice({
             })
             .addCase(searchDocuments.fulfilled, (state, action) => {
                 state.searching = false;
-                state.searchResults = action.payload.docs || action.payload;
+                // Handle both 'documents' and 'docs' property from API
+                const documentsArray = action.payload.documents || action.payload.docs ||
+                    (Array.isArray(action.payload) ? action.payload : []);
+                state.searchResults = documentsArray;
             })
             .addCase(searchDocuments.rejected, (state, action) => {
                 state.searching = false;
@@ -286,7 +292,10 @@ const documentSlice = createSlice({
             })
             .addCase(fetchDocumentsByFolder.fulfilled, (state, action) => {
                 state.loading = false;
-                state.documents = action.payload.docs || action.payload;
+                // Handle both 'documents' and 'docs' property from API
+                const documentsArray = action.payload.documents || action.payload.docs ||
+                    (Array.isArray(action.payload) ? action.payload : []);
+                state.documents = documentsArray;
             })
             .addCase(fetchDocumentsByFolder.rejected, (state, action) => {
                 state.loading = false;

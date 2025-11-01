@@ -2,7 +2,7 @@
 
 import EmptyState from "../common/EmptyState";
 import LoadingSpinner from "../common/LoadingSpinner";
-import DocumentCard from "./ DocumentCard";
+import DocumentCard from "./DocumentCard";
 
 function DocumentGrid({ documents, loading }) {
   if (loading) {

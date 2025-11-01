@@ -69,7 +69,7 @@ function DocumentCard({ document }) {
         {/* File Info */}
         <div className="space-y-1 mb-3">
           <p className="text-xs text-gray-500">
-            {formatFileSize(document.size)}
+            {formatFileSize(document.fileSize || document.size)}
           </p>
           <p className="text-xs text-gray-500">
             {formatRelativeTime(document.createdAt)}
@@ -134,3 +134,4 @@ function DocumentCard({ document }) {
 }
 
 export default DocumentCard;
+
