@@ -9,6 +9,7 @@ import authReducer from './slices/authSlice';
 import uiReducer from './slices/uiSlice';
 import documentReducer from './slices/documentSlice';
 import tagReducer from './slices/tagSlice';
+import actionReducer from './slices/actionSlice';
 
 /**
  * Configure Redux store
@@ -19,8 +20,8 @@ const store = configureStore({
         ui: uiReducer,
         documents: documentReducer,
         tags: tagReducer,
+        actions: actionReducer,
         // Add more reducers as we create them
-        // actions: actionReducer,
         // tasks: taskReducer,
         // webhooks: webhookReducer,
         // audit: auditReducer,

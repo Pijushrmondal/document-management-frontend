@@ -14,6 +14,8 @@ import Documents from "./pages/Documents";
 import DocumentDetails from "./pages/DocumentDetails";
 import Folders from "./pages/Folders";
 import FolderDetails from "./pages/FolderDetails";
+import Actions from "./pages/Actions";
+import ActionDetails from "./pages/ActionDetails";
 import NotFound from "./pages/NotFound";
 
 // Components
@@ -84,6 +86,28 @@ function App() {
             <ProtectedRoute>
               <AppLayout>
                 <FolderDetails />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/actions"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Actions />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/actions/:id"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <ActionDetails />
               </AppLayout>
             </ProtectedRoute>
           }
