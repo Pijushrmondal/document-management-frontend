@@ -12,6 +12,8 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Documents from "./pages/Documents";
 import DocumentDetails from "./pages/DocumentDetails";
+import Folders from "./pages/Folders";
+import FolderDetails from "./pages/FolderDetails";
 import NotFound from "./pages/NotFound";
 
 // Components
@@ -60,6 +62,28 @@ function App() {
             <ProtectedRoute>
               <AppLayout>
                 <DocumentDetails />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/folders"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Folders />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/folders/:name"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <FolderDetails />
               </AppLayout>
             </ProtectedRoute>
           }

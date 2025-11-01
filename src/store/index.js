@@ -8,6 +8,7 @@ import loggerMiddleware from './middleware/loggerMiddleware';
 import authReducer from './slices/authSlice';
 import uiReducer from './slices/uiSlice';
 import documentReducer from './slices/documentSlice';
+import tagReducer from './slices/tagSlice';
 
 /**
  * Configure Redux store
@@ -17,8 +18,8 @@ const store = configureStore({
         auth: authReducer,
         ui: uiReducer,
         documents: documentReducer,
+        tags: tagReducer,
         // Add more reducers as we create them
-        // tags: tagReducer,
         // actions: actionReducer,
         // tasks: taskReducer,
         // webhooks: webhookReducer,
