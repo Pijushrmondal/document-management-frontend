@@ -4,7 +4,6 @@ import { NavLink, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { selectSidebarOpen, setSidebarOpen } from "../../store/slices/uiSlice";
 import { selectUser } from "../../store/slices/authSlice";
-import { isAdmin, isAdminOrSupport } from "../../utils/helpers";
 
 function Sidebar() {
   const dispatch = useDispatch();
@@ -88,43 +87,45 @@ function Sidebar() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-30 w-64 bg-gray-900 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
+        className={`fixed inset-y-0 left-0 z-30 w-64 bg-gray-900 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:relative lg:inset-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        {/* Logo */}
-        <div className="flex items-center justify-center h-16 bg-gray-800">
-          <h1 className="text-white text-xl font-bold">📄 DMS</h1>
-        </div>
+        <div className="flex flex-col h-screen lg:h-full">
+          {/* Logo */}
+          <div className="flex items-center justify-center h-16 bg-gray-800 flex-shrink-0">
+            <h1 className="text-white text-xl font-bold">📄 DMS</h1>
+          </div>
 
-        {/* Navigation */}
-        <nav className="mt-5 px-2 space-y-1">
-          {filteredNavigation.map((item) => {
-            const isActive = location.pathname === item.path;
+          {/* Navigation - Scrollable */}
+          <nav className="flex-1 overflow-y-auto mt-5 px-2 space-y-1 pb-20">
+            {filteredNavigation.map((item) => {
+              const isActive = location.pathname === item.path;
 
-            return (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                onClick={closeSidebar}
-                className={`group flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors ${
-                  isActive
-                    ? "bg-gray-800 text-white"
-                    : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                }`}
-              >
-                <span className="mr-3 text-xl">{item.icon}</span>
-                {item.name}
-              </NavLink>
-            );
-          })}
-        </nav>
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  onClick={closeSidebar}
+                  className={`group flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors ${
+                    isActive
+                      ? "bg-gray-800 text-white"
+                      : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                  }`}
+                >
+                  <span className="mr-3 text-xl">{item.icon}</span>
+                  {item.name}
+                </NavLink>
+              );
+            })}
+          </nav>
 
-        {/* Footer */}
-        <div className="absolute bottom-0 w-full p-4 bg-gray-800">
-          <div className="text-xs text-gray-400 text-center">
-            <p>Document Management</p>
-            <p className="mt-1">v1.0.0</p>
+          {/* Footer - Fixed at bottom */}
+          <div className="flex-shrink-0 p-4 bg-gray-800 border-t border-gray-700">
+            <div className="text-xs text-gray-400 text-center">
+              <p>Document Management</p>
+              <p className="mt-1">v1.0.0</p>
+            </div>
           </div>
         </div>
       </aside>

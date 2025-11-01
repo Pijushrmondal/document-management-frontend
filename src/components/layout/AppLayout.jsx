@@ -5,7 +5,7 @@ import { useDispatch } from "react-redux";
 import { useLocation } from "react-router-dom";
 import { setBreadcrumbs } from "../../store/slices/uiSlice";
 import Navbar from "./Navbar";
-import Sidebar from "./ Sidebar";
+import Sidebar from "./Sidebar";
 
 function AppLayout({ children }) {
   const dispatch = useDispatch();
@@ -24,17 +24,17 @@ function AppLayout({ children }) {
   }, [location.pathname, dispatch]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
       <Sidebar />
 
-      {/* Main Content */}
-      <div className="lg:pl-64 flex flex-col flex-1">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Navbar */}
         <Navbar />
 
         {/* Page Content */}
-        <main className="flex-1 pt-16">
+        <main className="flex-1 pt-16 overflow-y-auto">
           <div className="py-6">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               {children}
