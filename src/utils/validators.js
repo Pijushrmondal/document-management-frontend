@@ -441,3 +441,37 @@ export const validateTaskData = (taskData) => {
         errors,
     };
 };
+
+
+/**
+ * Validate webhook data
+ * @param {object} webhookData - Webhook data to validate
+ * @returns {object} { valid: boolean, errors: object }
+ */
+export const validateWebhookData = (webhookData) => {
+    const errors = {};
+
+    // Validate URL
+    if (!webhookData.url || webhookData.url.trim() === '') {
+        errors.url = 'Webhook URL is required';
+    } else if (!isValidUrl(webhookData.url)) {
+        errors.url = 'Please enter a valid URL';
+    } else if (!webhookData.url.startsWith('https://')) {
+        errors.url = 'Webhook URL must use HTTPS';
+    }
+
+    // Validate events
+    if (!webhookData.events || webhookData.events.length === 0) {
+        errors.events = 'Please select at least one event type';
+    }
+
+    // Validate description (optional, but has max length)
+    if (webhookData.description && webhookData.description.length > 500) {
+        errors.description = 'Description must be at most 500 characters';
+    }
+
+    return {
+        valid: Object.keys(errors).length === 0,
+        errors,
+    };
+};

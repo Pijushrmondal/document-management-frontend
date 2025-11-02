@@ -348,6 +348,10 @@ export const SUCCESS_MESSAGES = {
     TASK_UPDATE: 'Task updated successfully!',
     TASK_COMPLETE: 'Task completed successfully!',
     TASK_DELETE: 'Task deleted successfully!',
+    WEBHOOK_CREATE: 'Webhook created successfully!',
+    WEBHOOK_UPDATE: 'Webhook updated successfully!',
+    WEBHOOK_DELETE: 'Webhook deleted successfully!',
+    WEBHOOK_TEST: 'Webhook test sent successfully!',
 };
 
 
@@ -401,3 +405,39 @@ export const TASK_PRIORITY_COLORS = {
 
 
 // ... rest of your constants
+
+
+// Add after AUDIT_ACTIONS or at the end of the file
+
+// Webhook Event Types
+export const WEBHOOK_EVENT_TYPES = {
+    DOCUMENT_UPLOADED: 'document.uploaded',
+    DOCUMENT_DELETED: 'document.deleted',
+    ACTION_COMPLETED: 'action.completed',
+    ACTION_FAILED: 'action.failed',
+    TASK_CREATED: 'task.created',
+    TASK_COMPLETED: 'task.completed',
+    TASK_FAILED: 'task.failed',
+};
+
+// Webhook Event Type Labels
+export const WEBHOOK_EVENT_TYPE_LABELS = {
+    'document.uploaded': 'Document Uploaded',
+    'document.deleted': 'Document Deleted',
+    'action.completed': 'Action Completed',
+    'action.failed': 'Action Failed',
+    'task.created': 'Task Created',
+    'task.completed': 'Task Completed',
+    'task.failed': 'Task Failed',
+};
+
+// Webhook Event Type Descriptions
+export const WEBHOOK_EVENT_TYPE_DESCRIPTIONS = {
+    'document.uploaded': 'Triggered when a new document is uploaded',
+    'document.deleted': 'Triggered when a document is deleted',
+    'action.completed': 'Triggered when an AI action completes successfully',
+    'action.failed': 'Triggered when an AI action fails',
+    'task.created': 'Triggered when a new task is created',
+    'task.completed': 'Triggered when a task is completed',
+    'task.failed': 'Triggered when a task fails',
+};

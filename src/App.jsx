@@ -22,6 +22,8 @@ import NotFound from "./pages/NotFound";
 
 // Components
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import Webhooks from "./pages/Webhooks";
+import WebhookDetails from "./pages/WebhookDetails";
 
 function App() {
   const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -142,6 +144,28 @@ function App() {
           path="/"
           element={
             <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />
+          }
+        />
+
+        <Route
+          path="/webhooks"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Webhooks />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/webhooks/:id"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <WebhookDetails />
+              </AppLayout>
+            </ProtectedRoute>
           }
         />
 
