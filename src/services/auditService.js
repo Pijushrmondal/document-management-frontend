@@ -24,7 +24,7 @@ const auditService = {
      * @returns {Promise} Audit log object
      */
     getById: async (id) => {
-        const response = await apiService.get(`${API_ENDPOINTS.AUDIT}/${id}`);
+        const response = await apiService.get(`${API_ENDPOINTS.AUDIT}/user/${id}`);
         return response;
     },
 

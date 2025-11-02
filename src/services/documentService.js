@@ -66,20 +66,13 @@ const documentService = {
      * @returns {Promise} Search results
      */
     search: async (query, scope = 'folder', ids = []) => {
-        const params = {
+        const payload = {
             q: query,
             scope,
+            ids: ids,
         };
 
-        // Add IDs as array query params
-        ids.forEach((id) => {
-            if (!params['ids[]']) {
-                params['ids[]'] = [];
-            }
-            params['ids[]'].push(id);
-        });
-
-        const response = await apiService.get(API_ENDPOINTS.DOCUMENT_SEARCH, params);
+        const response = await apiService.post(API_ENDPOINTS.DOCUMENT_SEARCH, payload);
         return response;
     },
 

@@ -92,7 +92,7 @@ function Audit() {
           >
             {showFilters ? "Hide" : "Show"} Filters
           </Button>
-          <Button
+          {/* <Button
             variant="outline"
             icon="📥"
             onClick={handleExport}
@@ -100,7 +100,7 @@ function Audit() {
             disabled={exporting}
           >
             Export CSV
-          </Button>
+          </Button> */}
         </div>
       </div>
 
