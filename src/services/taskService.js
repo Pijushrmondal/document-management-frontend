@@ -81,7 +81,7 @@ const taskService = {
      * @returns {Promise} Today's tasks
      */
     getToday: async () => {
-        const response = await apiService.get(API_ENDPOINTS.TASKS_TODAY);
+        const response = await apiService.get(API_ENDPOINTS.TASK_TODAY);
         return response;
     },
 
@@ -90,7 +90,7 @@ const taskService = {
      * @returns {Promise} Overdue tasks
      */
     getOverdue: async () => {
-        const response = await apiService.get(API_ENDPOINTS.TASKS_OVERDUE);
+        const response = await apiService.get(API_ENDPOINTS.TASK_OVERDUE);
         return response;
     },
 
