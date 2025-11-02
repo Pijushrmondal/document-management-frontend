@@ -408,20 +408,36 @@ export const validateTaskData = (taskData) => {
         errors.description = 'Description must be at most 1000 characters';
     }
 
-    // Validate status
-    const validStatuses = ['todo', 'in_progress', 'done'];
-    if (!taskData.status) {
-        errors.status = 'Status is required';
-    } else if (!validStatuses.includes(taskData.status)) {
-        errors.status = 'Invalid status';
+    // Validate type
+    const validTypes = ['unsubscribe', 'follow_up', 'review', 'other'];
+    if (!taskData.type) {
+        errors.type = 'Type is required';
+    } else if (!validTypes.includes(taskData.type)) {
+        errors.type = 'Invalid task type';
     }
 
-    // Validate priority
-    const validPriorities = ['low', 'medium', 'high'];
-    if (!taskData.priority) {
-        errors.priority = 'Priority is required';
-    } else if (!validPriorities.includes(taskData.priority)) {
-        errors.priority = 'Invalid priority';
+    // Validate channel
+    const validChannels = ['email', 'url', 'phone'];
+    if (!taskData.channel) {
+        errors.channel = 'Channel is required';
+    } else if (!validChannels.includes(taskData.channel)) {
+        errors.channel = 'Invalid channel';
+    }
+
+    // Validate target based on channel (optional, but validate format if provided)
+    if (taskData.target) {
+        if (taskData.channel === 'email' && !isValidEmail(taskData.target)) {
+            errors.target = 'Please enter a valid email address';
+        } else if (taskData.channel === 'url' && !isValidUrl(taskData.target)) {
+            errors.target = 'Please enter a valid URL';
+        } else if (taskData.channel === 'phone' && !isValidPhone(taskData.target)) {
+            errors.target = 'Please enter a valid phone number';
+        }
+    }
+
+    // Validate source (optional, but has max length)
+    if (taskData.source && taskData.source.length > 100) {
+        errors.source = 'Source must be at most 100 characters';
     }
 
     // Validate due date (optional, but must be valid date if provided)
@@ -431,9 +447,11 @@ export const validateTaskData = (taskData) => {
         }
     }
 
-    // Validate assignee (optional, but has max length)
-    if (taskData.assignee && taskData.assignee.length > 100) {
-        errors.assignee = 'Assignee name must be at most 100 characters';
+    // Validate metadata (optional, but must be object if provided)
+    if (taskData.metadata !== undefined && taskData.metadata !== null) {
+        if (typeof taskData.metadata !== 'object' || Array.isArray(taskData.metadata)) {
+            errors.metadata = 'Metadata must be an object';
+        }
     }
 
     return {

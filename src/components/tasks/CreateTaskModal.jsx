@@ -10,7 +10,12 @@ import {
 import Modal from "../common/Modal";
 import Button from "../common/Button";
 import { validateTaskData } from "../../utils/validators";
-import { TASK_STATUSES, TASK_PRIORITIES } from "../../utils/constants";
+import {
+  TASK_TYPES,
+  TASK_TYPE_LABELS,
+  TASK_CHANNELS,
+  TASK_CHANNEL_LABELS,
+} from "../../utils/constants";
 
 function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
   const dispatch = useDispatch();
@@ -19,14 +24,18 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
   const isEditing = !!existingTask;
 
   const [formData, setFormData] = useState({
+    source: existingTask?.source || "",
+    type: existingTask?.type || "follow_up",
+    channel: existingTask?.channel || "email",
+    target: existingTask?.target || "",
     title: existingTask?.title || "",
     description: existingTask?.description || "",
-    status: existingTask?.status || "todo",
-    priority: existingTask?.priority || "medium",
     dueDate: existingTask?.dueDate ? existingTask.dueDate.split("T")[0] : "",
-    assignee: existingTask?.assignee || "",
+    metadataKey: "",
+    metadataValue: "",
   });
 
+  const [metadata, setMetadata] = useState(existingTask?.metadata || {});
   const [errors, setErrors] = useState({});
 
   const handleChange = (field, value) => {
@@ -38,7 +47,17 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
   };
 
   const validate = () => {
-    const validation = validateTaskData(formData);
+    // Create a validation object with all required fields
+    const validationData = {
+      ...formData,
+      // For validation, use ISO string format for dueDate
+      dueDate: formData.dueDate
+        ? new Date(formData.dueDate).toISOString()
+        : null,
+      metadata: metadata,
+    };
+
+    const validation = validateTaskData(validationData);
     if (!validation.valid) {
       setErrors(validation.errors);
       return false;
@@ -52,12 +71,30 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
     if (!validate()) return;
 
     try {
+      // Format dueDate as ISO string with time
+      let dueDateISO = null;
+      if (formData.dueDate) {
+        const date = new Date(formData.dueDate);
+        // Set to end of day if no time specified
+        date.setHours(23, 59, 59, 999);
+        dueDateISO = date.toISOString();
+      }
+
       const taskData = {
-        ...formData,
-        dueDate: formData.dueDate
-          ? new Date(formData.dueDate).toISOString()
-          : null,
+        source: formData.source || undefined,
+        type: formData.type,
+        channel: formData.channel,
+        target: formData.target || undefined,
+        title: formData.title,
+        description: formData.description || undefined,
+        dueDate: dueDateISO || undefined,
+        metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
       };
+
+      // Remove undefined fields
+      Object.keys(taskData).forEach(
+        (key) => taskData[key] === undefined && delete taskData[key]
+      );
 
       if (isEditing) {
         await dispatch(
@@ -69,13 +106,17 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
 
       // Reset and close
       setFormData({
+        source: "",
+        type: "follow_up",
+        channel: "email",
+        target: "",
         title: "",
         description: "",
-        status: "todo",
-        priority: "medium",
         dueDate: "",
-        assignee: "",
+        metadataKey: "",
+        metadataValue: "",
       });
+      setMetadata({});
       setErrors({});
       if (onSuccess) onSuccess();
       onClose();
@@ -87,16 +128,42 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
   const handleClose = () => {
     if (!loading) {
       setFormData({
+        source: "",
+        type: "follow_up",
+        channel: "email",
+        target: "",
         title: "",
         description: "",
-        status: "todo",
-        priority: "medium",
         dueDate: "",
-        assignee: "",
+        metadataKey: "",
+        metadataValue: "",
       });
+      setMetadata({});
       setErrors({});
       onClose();
     }
+  };
+
+  const handleAddMetadata = () => {
+    if (formData.metadataKey && formData.metadataValue) {
+      setMetadata((prev) => ({
+        ...prev,
+        [formData.metadataKey]: formData.metadataValue,
+      }));
+      setFormData((prev) => ({
+        ...prev,
+        metadataKey: "",
+        metadataValue: "",
+      }));
+    }
+  };
+
+  const handleRemoveMetadata = (key) => {
+    setMetadata((prev) => {
+      const newMeta = { ...prev };
+      delete newMeta[key];
+      return newMeta;
+    });
   };
 
   return (
@@ -118,6 +185,86 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
       }
     >
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Source and Type */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Source */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Source
+            </label>
+            <input
+              type="text"
+              value={formData.source}
+              onChange={(e) => handleChange("source", e.target.value)}
+              placeholder="e.g., scanner-01 (optional)"
+              disabled={loading}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+
+          {/* Type */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Type <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={formData.type}
+              onChange={(e) => handleChange("type", e.target.value)}
+              disabled={loading}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              {Object.entries(TASK_TYPE_LABELS).map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Channel and Target */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Channel */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Channel <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={formData.channel}
+              onChange={(e) => handleChange("channel", e.target.value)}
+              disabled={loading}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              {Object.entries(TASK_CHANNEL_LABELS).map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Target */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Target
+            </label>
+            <input
+              type="text"
+              value={formData.target}
+              onChange={(e) => handleChange("target", e.target.value)}
+              placeholder={
+                formData.channel === "email"
+                  ? "user@example.com"
+                  : formData.channel === "phone"
+                  ? "+1234567890"
+                  : "https://example.com"
+              }
+              disabled={loading}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+
         {/* Title */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -153,76 +300,77 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
           />
         </div>
 
-        {/* Status and Priority */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Status */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Status <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={formData.status}
-              onChange={(e) => handleChange("status", e.target.value)}
-              disabled={loading}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              {Object.entries(TASK_STATUSES).map(([key, { label }]) => (
-                <option key={key} value={key}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Priority */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Priority <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={formData.priority}
-              onChange={(e) => handleChange("priority", e.target.value)}
-              disabled={loading}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              {Object.entries(TASK_PRIORITIES).map(([key, { label }]) => (
-                <option key={key} value={key}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
+        {/* Due Date */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Due Date
+          </label>
+          <input
+            type="date"
+            value={formData.dueDate}
+            onChange={(e) => handleChange("dueDate", e.target.value)}
+            disabled={loading}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
         </div>
 
-        {/* Due Date and Assignee */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Due Date */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Due Date
-            </label>
-            <input
-              type="date"
-              value={formData.dueDate}
-              onChange={(e) => handleChange("dueDate", e.target.value)}
-              disabled={loading}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          {/* Assignee */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Assignee
-            </label>
-            <input
-              type="text"
-              value={formData.assignee}
-              onChange={(e) => handleChange("assignee", e.target.value)}
-              placeholder="Enter assignee name (optional)"
-              disabled={loading}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+        {/* Metadata */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Metadata (Optional)
+          </label>
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={formData.metadataKey}
+                onChange={(e) => handleChange("metadataKey", e.target.value)}
+                placeholder="Key (e.g., invoiceId)"
+                disabled={loading}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <input
+                type="text"
+                value={formData.metadataValue}
+                onChange={(e) => handleChange("metadataValue", e.target.value)}
+                placeholder="Value (e.g., INV-12345)"
+                disabled={loading}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleAddMetadata}
+                disabled={
+                  loading || !formData.metadataKey || !formData.metadataValue
+                }
+              >
+                Add
+              </Button>
+            </div>
+            {Object.keys(metadata).length > 0 && (
+              <div className="mt-2 space-y-1">
+                {Object.entries(metadata).map(([key, value]) => (
+                  <div
+                    key={key}
+                    className="flex items-center justify-between p-2 bg-gray-50 rounded border border-gray-200"
+                  >
+                    <span className="text-sm">
+                      <span className="font-medium">{key}:</span>{" "}
+                      {String(value)}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveMetadata(key)}
+                      disabled={loading}
+                      className="text-red-600 hover:text-red-800 text-sm"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </form>
