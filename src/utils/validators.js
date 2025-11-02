@@ -384,3 +384,60 @@ export const validateForm = (data, rules) => {
         errors,
     };
 };
+
+
+/**
+ * Validate task data
+ * @param {object} taskData - Task data to validate
+ * @returns {object} { valid: boolean, errors: object }
+ */
+export const validateTaskData = (taskData) => {
+    const errors = {};
+
+    // Validate title
+    if (!taskData.title || taskData.title.trim() === '') {
+        errors.title = 'Title is required';
+    } else if (taskData.title.length < 3) {
+        errors.title = 'Title must be at least 3 characters';
+    } else if (taskData.title.length > 200) {
+        errors.title = 'Title must be at most 200 characters';
+    }
+
+    // Validate description (optional, but has max length)
+    if (taskData.description && taskData.description.length > 1000) {
+        errors.description = 'Description must be at most 1000 characters';
+    }
+
+    // Validate status
+    const validStatuses = ['todo', 'in_progress', 'done'];
+    if (!taskData.status) {
+        errors.status = 'Status is required';
+    } else if (!validStatuses.includes(taskData.status)) {
+        errors.status = 'Invalid status';
+    }
+
+    // Validate priority
+    const validPriorities = ['low', 'medium', 'high'];
+    if (!taskData.priority) {
+        errors.priority = 'Priority is required';
+    } else if (!validPriorities.includes(taskData.priority)) {
+        errors.priority = 'Invalid priority';
+    }
+
+    // Validate due date (optional, but must be valid date if provided)
+    if (taskData.dueDate) {
+        if (!isValidDate(taskData.dueDate)) {
+            errors.dueDate = 'Invalid date format';
+        }
+    }
+
+    // Validate assignee (optional, but has max length)
+    if (taskData.assignee && taskData.assignee.length > 100) {
+        errors.assignee = 'Assignee name must be at most 100 characters';
+    }
+
+    return {
+        valid: Object.keys(errors).length === 0,
+        errors,
+    };
+};

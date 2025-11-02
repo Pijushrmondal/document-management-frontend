@@ -349,3 +349,55 @@ export const SUCCESS_MESSAGES = {
     TASK_COMPLETE: 'Task completed successfully!',
     TASK_DELETE: 'Task deleted successfully!',
 };
+
+
+
+
+
+
+// Kanban Task Statuses (for Kanban board - user-facing task management)
+export const TASK_STATUSES = {
+    todo: {
+        label: 'To Do',
+        color: 'blue',
+    },
+    in_progress: {
+        label: 'In Progress',
+        color: 'yellow',
+    },
+    done: {
+        label: 'Done',
+        color: 'green',
+    },
+};
+
+// Task Priorities (for Kanban board tasks)
+export const TASK_PRIORITIES = {
+    low: {
+        label: 'Low Priority',
+        color: 'green',
+        icon: '🟢',
+    },
+    medium: {
+        label: 'Medium Priority',
+        color: 'yellow',
+        icon: '🟡',
+    },
+    high: {
+        label: 'High Priority',
+        color: 'red',
+        icon: '🔴',
+    },
+};
+
+// Task Priority Colors (for badges)
+export const TASK_PRIORITY_COLORS = {
+    low: 'bg-green-100 text-green-800 border-green-200',
+    medium: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+    high: 'bg-red-100 text-red-800 border-red-200',
+};
+
+// Task Types
+
+
+// ... rest of your constants
