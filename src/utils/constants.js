@@ -441,3 +441,48 @@ export const WEBHOOK_EVENT_TYPE_DESCRIPTIONS = {
     'task.completed': 'Triggered when a task is completed',
     'task.failed': 'Triggered when a task fails',
 };
+
+
+// Add after AUDIT_ACTIONS
+
+// Audit Action Labels
+export const AUDIT_ACTION_LABELS = {
+    'user.login': '🔐 User Login',
+    'user.logout': '🚪 User Logout',
+    'document.upload': '📤 Document Upload',
+    'document.view': '👁️ Document View',
+    'document.download': '📥 Document Download',
+    'document.delete': '🗑️ Document Delete',
+    'tag.create': '🏷️ Tag Create',
+    'tag.delete': '❌ Tag Delete',
+    'tag.assign': '📌 Tag Assign',
+    'action.run': '🤖 Action Run',
+    'action.complete': '✅ Action Complete',
+    'action.fail': '❌ Action Fail',
+    'webhook.received': '📨 Webhook Received',
+    'webhook.processed': '✔️ Webhook Processed',
+    'task.create': '📝 Task Create',
+    'task.update': '✏️ Task Update',
+    'task.complete': '✅ Task Complete',
+};
+
+// Audit Action Colors
+export const AUDIT_ACTION_COLORS = {
+    'user.login': 'bg-green-100 text-green-800',
+    'user.logout': 'bg-gray-100 text-gray-800',
+    'document.upload': 'bg-blue-100 text-blue-800',
+    'document.view': 'bg-purple-100 text-purple-800',
+    'document.download': 'bg-indigo-100 text-indigo-800',
+    'document.delete': 'bg-red-100 text-red-800',
+    'tag.create': 'bg-green-100 text-green-800',
+    'tag.delete': 'bg-red-100 text-red-800',
+    'tag.assign': 'bg-blue-100 text-blue-800',
+    'action.run': 'bg-purple-100 text-purple-800',
+    'action.complete': 'bg-green-100 text-green-800',
+    'action.fail': 'bg-red-100 text-red-800',
+    'webhook.received': 'bg-yellow-100 text-yellow-800',
+    'webhook.processed': 'bg-green-100 text-green-800',
+    'task.create': 'bg-blue-100 text-blue-800',
+    'task.update': 'bg-yellow-100 text-yellow-800',
+    'task.complete': 'bg-green-100 text-green-800',
+};

@@ -53,13 +53,14 @@ function Sidebar() {
       name: "Webhooks",
       path: "/webhooks",
       icon: "🔗",
-      roles: ["admin", "support"],
+      // roles: ["admin", "support"],
+      roles: null, // All roles can view their audit logs
     },
     {
       name: "Audit Logs",
       path: "/audit",
       icon: "📝",
-      roles: ["admin", "support"],
+      roles: null, // All roles can view their audit logs
     },
     {
       name: "Metrics",
@@ -100,7 +101,11 @@ function Sidebar() {
           {/* Navigation - Scrollable */}
           <nav className="flex-1 overflow-y-auto mt-5 px-2 space-y-1 pb-20">
             {filteredNavigation.map((item) => {
-              const isActive = location.pathname === item.path;
+              // Check if active - handle nested routes (e.g., /audit/123 matches /audit)
+              const isActive =
+                location.pathname === item.path ||
+                (item.path !== "/" &&
+                  location.pathname.startsWith(item.path + "/"));
 
               return (
                 <NavLink

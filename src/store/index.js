@@ -12,6 +12,7 @@ import tagReducer from './slices/tagSlice';
 import actionReducer from './slices/actionSlice';
 import taskReducer from './slices/taskSlice';
 import webhookReducer from './slices/webhookSlice';
+import auditReducer from './slices/auditSlice';
 
 /**
  * Configure Redux store
@@ -25,8 +26,8 @@ const store = configureStore({
         actions: actionReducer,
         tasks: taskReducer,
         webhooks: webhookReducer,
+        audit: auditReducer,
         // Add more reducers as we create them
-        // audit: auditReducer,
         // metrics: metricsReducer,
     },
     middleware: (getDefaultMiddleware) =>

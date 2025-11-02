@@ -24,6 +24,8 @@ import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import Webhooks from "./pages/Webhooks";
 import WebhookDetails from "./pages/WebhookDetails";
+import Audit from "./pages/Audit";
+import AuditDetails from "./pages/AuditDetails";
 
 function App() {
   const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -164,6 +166,28 @@ function App() {
             <ProtectedRoute>
               <AppLayout>
                 <WebhookDetails />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/audit"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Audit />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/audit/:id"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <AuditDetails />
               </AppLayout>
             </ProtectedRoute>
           }
