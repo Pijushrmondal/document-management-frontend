@@ -26,6 +26,7 @@ import Webhooks from "./pages/Webhooks";
 import WebhookDetails from "./pages/WebhookDetails";
 import Audit from "./pages/Audit";
 import AuditDetails from "./pages/AuditDetails";
+import Metrics from "./pages/Metrics";
 
 function App() {
   const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -188,6 +189,17 @@ function App() {
             <ProtectedRoute>
               <AppLayout>
                 <AuditDetails />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/metrics"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Metrics />
               </AppLayout>
             </ProtectedRoute>
           }

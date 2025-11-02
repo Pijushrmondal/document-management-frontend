@@ -67,6 +67,7 @@ function Sidebar() {
       path: "/metrics",
       icon: "📈",
       roles: null,
+      // roles: [USER_ROLES.ADMIN, USER_ROLES.USER], // Available to all
     },
   ];
 
