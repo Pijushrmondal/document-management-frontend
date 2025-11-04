@@ -12,7 +12,7 @@ function QuickStats({ metrics }) {
         value={metrics.documents?.total || 0}
         icon="📄"
         color="blue"
-        subtitle={`${metrics.documents?.uploaded24h || 0} uploaded today`}
+        subtitle={`${metrics.documents?.thisMonth || 0} this month`}
       />
       <MetricCard
         title="AI Actions"
@@ -29,11 +29,11 @@ function QuickStats({ metrics }) {
         subtitle={`${metrics.tasks?.completed || 0} completed`}
       />
       <MetricCard
-        title="System Health"
-        value={metrics.health?.status || "OK"}
-        icon="💚"
-        color="green"
-        subtitle={`Uptime: ${metrics.health?.uptime || "99.9%"}`}
+        title="Tags"
+        value={metrics.tags?.total || 0}
+        icon="🏷️"
+        color="indigo"
+        subtitle="Total tags"
       />
     </div>
   );

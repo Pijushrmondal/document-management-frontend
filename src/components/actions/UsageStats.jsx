@@ -44,23 +44,45 @@ function UsageStats() {
         {/* Monthly Usage */}
         <div className="bg-blue-50 rounded-lg p-6">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-blue-900">This Month</h3>
+            <h3 className="text-sm font-medium text-blue-900">
+              {usage.monthly?.period 
+                ? `Period: ${usage.monthly.period}` 
+                : 'This Month'}
+            </h3>
             <span className="text-2xl">📊</span>
           </div>
           <div className="mt-4 space-y-2">
             <div className="flex justify-between">
               <span className="text-sm text-blue-700">Actions Run:</span>
               <span className="text-lg font-semibold text-blue-900">
-                {formatNumber(usage.monthly?.count || 0)}
+                {formatNumber(usage.monthly?.actionsCount || 0)}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-blue-700">Credits Used:</span>
               <span className="text-lg font-semibold text-blue-900">
-                {formatNumber(usage.monthly?.creditsUsed || 0)}
+                {formatNumber(usage.monthly?.totalCredits || 0)}
               </span>
             </div>
           </div>
+          
+          {/* Monthly Breakdown */}
+          {usage.monthly?.breakdown && usage.monthly.breakdown.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-blue-200">
+              <h4 className="text-xs font-medium text-blue-800 mb-2">Daily Breakdown</h4>
+              <div className="space-y-1 max-h-32 overflow-y-auto">
+                {usage.monthly.breakdown.map((item, index) => (
+                  <div key={index} className="flex justify-between text-xs">
+                    <span className="text-blue-700">{item.date}</span>
+                    <div className="flex gap-2">
+                      <span className="text-blue-900 font-medium">{item.credits} credits</span>
+                      <span className="text-blue-600">({item.actionType})</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* All-Time Usage */}
@@ -71,42 +93,29 @@ function UsageStats() {
           </div>
           <div className="mt-4 space-y-2">
             <div className="flex justify-between">
-              <span className="text-sm text-green-700">Total Actions:</span>
-              <span className="text-lg font-semibold text-green-900">
-                {formatNumber(usage.allTime?.count || 0)}
-              </span>
-            </div>
-            <div className="flex justify-between">
               <span className="text-sm text-green-700">Total Credits:</span>
               <span className="text-lg font-semibold text-green-900">
-                {formatNumber(usage.allTime?.creditsUsed || 0)}
+                {formatNumber(usage.allTime?.totalCredits || 0)}
               </span>
             </div>
           </div>
+          
+          {/* Monthly Breakdown for All-Time */}
+          {usage.allTime?.monthlyBreakdown && usage.allTime.monthlyBreakdown.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-green-200">
+              <h4 className="text-xs font-medium text-green-800 mb-2">Monthly Breakdown</h4>
+              <div className="space-y-1 max-h-32 overflow-y-auto">
+                {usage.allTime.monthlyBreakdown.map((item, index) => (
+                  <div key={index} className="flex justify-between text-xs">
+                    <span className="text-green-700">{item.month}</span>
+                    <span className="text-green-900 font-medium">{item.credits} credits</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Action Types Breakdown */}
-      {usage.allTime?.byType &&
-        Object.keys(usage.allTime.byType).length > 0 && (
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <h3 className="text-sm font-medium text-gray-900 mb-3">
-              By Action Type
-            </h3>
-            <div className="space-y-2">
-              {Object.entries(usage.allTime.byType).map(([type, count]) => (
-                <div key={type} className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600 capitalize">
-                    {type.replace("_", " ")}:
-                  </span>
-                  <span className="text-sm font-medium text-gray-900">
-                    {formatNumber(count)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
     </Card>
   );
 }

@@ -9,6 +9,7 @@ import {
   selectDocumentLoading,
   selectViewMode,
   selectSearchResults,
+  selectSearching,
   setViewMode,
   clearSearchResults,
 } from "../store/slices/documentSlice";
@@ -27,6 +28,7 @@ function Documents() {
   const searchResults = useSelector(selectSearchResults);
   const pagination = useSelector(selectPagination);
   const loading = useSelector(selectDocumentLoading);
+  const searching = useSelector(selectSearching);
   const viewMode = useSelector(selectViewMode);
 
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -62,6 +64,19 @@ function Documents() {
   };
 
   const displayDocuments = isSearchMode ? searchResults : documents;
+
+  // Debug logging in development
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+      console.log('Documents page state:', {
+        isSearchMode,
+        searchResultsCount: searchResults.length,
+        documentsCount: documents.length,
+        displayDocumentsCount: displayDocuments.length,
+        searchResults,
+      });
+    }
+  }, [isSearchMode, searchResults, documents, displayDocuments]);
 
   return (
     <div className="space-y-6">
@@ -164,9 +179,9 @@ function Documents() {
       {/* Documents Display */}
       <div>
         {viewMode === "grid" ? (
-          <DocumentGrid documents={displayDocuments} loading={loading} />
+          <DocumentGrid documents={displayDocuments} loading={isSearchMode ? searching : loading} />
         ) : (
-          <DocumentList documents={displayDocuments} loading={loading} />
+          <DocumentList documents={displayDocuments} loading={isSearchMode ? searching : loading} />
         )}
       </div>
 

@@ -95,7 +95,11 @@ function AuditLogTable({ logs, loading }) {
                 </td>
                 <td className="px-6 py-4">
                   <div className="text-sm text-gray-600 max-w-xs truncate">
-                    {log.details
+                    {log.metadata
+                      ? typeof log.metadata === "string"
+                        ? log.metadata
+                        : JSON.stringify(log.metadata)
+                      : log.details
                       ? typeof log.details === "string"
                         ? log.details
                         : JSON.stringify(log.details)

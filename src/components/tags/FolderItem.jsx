@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { deleteTag } from "../../store/slices/tagSlice";
+import { deleteTag, fetchFolders } from "../../store/slices/tagSlice";
 import Badge from "../common/Badge";
 import ConfirmDialog from "../common/ConfirmDialog";
 
@@ -18,12 +18,19 @@ function FolderItem({ folder, showActions = true }) {
   };
 
   const handleDelete = async (e) => {
+    // Stop propagation if called from click event
+    if (e && e.stopPropagation) {
     e.stopPropagation();
+    }
     setLoading(true);
     try {
       await dispatch(deleteTag(folder.id)).unwrap();
       setShowDeleteDialog(false);
+      // Refresh folders list after successful delete
+      await dispatch(fetchFolders());
     } catch (error) {
+      // Error is already shown via toast in the thunk
+      // Keep dialog open so user can see the error and try again if needed
       console.error("Delete failed:", error);
     } finally {
       setLoading(false);
@@ -88,7 +95,11 @@ function FolderItem({ folder, showActions = true }) {
         onClose={() => setShowDeleteDialog(false)}
         onConfirm={handleDelete}
         title="Delete Folder"
-        message={`Are you sure you want to delete "${folder.name}"? Documents will not be deleted, but they will lose this folder association.`}
+        message={
+          folder.documentCount > 0
+            ? `⚠️ Warning: "${folder.name}" contains ${folder.documentCount} document(s). The deletion will fail if documents are still assigned to this folder. Please remove or reassign all documents first.`
+            : `Are you sure you want to delete "${folder.name}"? This action cannot be undone.`
+        }
         confirmText="Delete"
         confirmVariant="danger"
         loading={loading}

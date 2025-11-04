@@ -245,9 +245,58 @@ const documentSlice = createSlice({
             })
             .addCase(searchDocuments.fulfilled, (state, action) => {
                 state.searching = false;
-                // Handle both 'documents' and 'docs' property from API
-                const documentsArray = action.payload.documents || action.payload.docs ||
-                    (Array.isArray(action.payload) ? action.payload : []);
+                // Handle different response structures from API
+                let documentsArray = [];
+
+                // Check for nested documentIds structure (search API response)
+                // Response format: { folder: "folder-name", documentIds: [{ _id, documentId: {...}, tagId, isPrimary, ... }], total: 1 }
+                if (action.payload?.documentIds && Array.isArray(action.payload.documentIds)) {
+                    // Extract documents from documentIds array
+                    // Each item has: { _id, documentId: {...document data...}, tagId, isPrimary, ... }
+                    const folderName = action.payload.folder || action.payload.folderName;
+                    documentsArray = action.payload.documentIds
+                        .map((item) => {
+                            const doc = item.documentId || item;
+                            // Normalize document structure: convert _id to id, preserve other fields
+                            return {
+                                id: doc._id || doc.id,
+                                filename: doc.filename,
+                                fileSize: doc.fileSize,
+                                filePath: doc.filePath,
+                                mimeType: doc.mimeType,
+                                textContent: doc.textContent,
+                                createdAt: doc.createdAt,
+                                updatedAt: doc.updatedAt,
+                                ownerId: doc.ownerId,
+                                // Map folder name to primaryTag for UI components
+                                primaryTag: folderName,
+                                // Preserve tag info if available
+                                tagId: item.tagId,
+                                isPrimary: item.isPrimary,
+                                // Secondary tags not available in search response, leave empty
+                                secondaryTags: [],
+                                // Keep original _id as fallback
+                                _id: doc._id,
+                            };
+                        });
+                } else if (Array.isArray(action.payload)) {
+                    documentsArray = action.payload;
+                } else if (action.payload?.data && Array.isArray(action.payload.data)) {
+                    documentsArray = action.payload.data;
+                } else if (action.payload?.documents && Array.isArray(action.payload.documents)) {
+                    documentsArray = action.payload.documents;
+                } else if (action.payload?.docs && Array.isArray(action.payload.docs)) {
+                    documentsArray = action.payload.docs;
+                } else if (action.payload?.results && Array.isArray(action.payload.results)) {
+                    documentsArray = action.payload.results;
+                }
+
+                // Log for debugging in development
+                if (import.meta.env.DEV) {
+                    console.log('Search response:', action.payload);
+                    console.log('Parsed documents:', documentsArray);
+                }
+
                 state.searchResults = documentsArray;
             })
             .addCase(searchDocuments.rejected, (state, action) => {
@@ -292,9 +341,27 @@ const documentSlice = createSlice({
             })
             .addCase(fetchDocumentsByFolder.fulfilled, (state, action) => {
                 state.loading = false;
-                // Handle both 'documents' and 'docs' property from API
-                const documentsArray = action.payload.documents || action.payload.docs ||
-                    (Array.isArray(action.payload) ? action.payload : []);
+
+                let documentsArray = [];
+
+                if (Array.isArray(action.payload)) {
+                    documentsArray = action.payload;
+                } else if (action.payload?.data && Array.isArray(action.payload.data)) {
+                    documentsArray = action.payload.data;
+                } else if (action.payload?.documents && Array.isArray(action.payload.documents)) {
+                    documentsArray = action.payload.documents;
+                } else if (action.payload?.docs && Array.isArray(action.payload.docs)) {
+                    documentsArray = action.payload.docs;
+                } else if (action.payload?.results && Array.isArray(action.payload.results)) {
+                    documentsArray = action.payload.results;
+                }
+
+                // Log for debugging in development
+                if (import.meta.env.DEV) {
+                    console.log('Folder documents response:', action.payload);
+                    console.log('Parsed documents:', documentsArray);
+                }
+
                 state.documents = documentsArray;
             })
             .addCase(fetchDocumentsByFolder.rejected, (state, action) => {

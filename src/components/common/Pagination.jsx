@@ -6,7 +6,8 @@ function Pagination({
   onPageChange,
   loading = false,
 }) {
-  if (totalPages <= 1) return null;
+  // Don't render if invalid data
+  if (!totalPages || totalPages <= 0 || !currentPage) return null;
 
   const getPageNumbers = () => {
     const pages = [];

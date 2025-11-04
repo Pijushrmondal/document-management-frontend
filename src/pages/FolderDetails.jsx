@@ -1,6 +1,6 @@
 // src/pages/FolderDetails.jsx
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -8,7 +8,6 @@ import {
   selectFolderDocuments,
   selectCurrentFolder,
   selectTagLoading,
-  deleteTag,
 } from "../store/slices/tagSlice";
 import { setViewMode, selectViewMode } from "../store/slices/documentSlice";
 import Card from "../components/common/Card";
@@ -17,7 +16,6 @@ import Badge from "../components/common/Badge";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import DocumentGrid from "../components/documents/DocumentGrid";
 import DocumentList from "../components/documents/DocumentList";
-import ConfirmDialog from "../components/common/ConfirmDialog";
 
 function FolderDetails() {
   const { name } = useParams();
@@ -29,9 +27,6 @@ function FolderDetails() {
   const loading = useSelector(selectTagLoading);
   const viewMode = useSelector(selectViewMode);
 
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-
   useEffect(() => {
     if (name) {
       dispatch(fetchFolderDocuments(name));
@@ -40,21 +35,6 @@ function FolderDetails() {
 
   const handleViewModeChange = (mode) => {
     dispatch(setViewMode(mode));
-  };
-
-  const handleDeleteFolder = async () => {
-    setDeleteLoading(true);
-    try {
-      // Note: We need the folder ID, but we only have the name
-      // In a real app, you'd fetch the folder details first
-      // For now, we'll just navigate back
-      navigate("/folders");
-      setShowDeleteDialog(false);
-    } catch (error) {
-      console.error("Delete failed:", error);
-    } finally {
-      setDeleteLoading(false);
-    }
   };
 
   if (loading && documents.length === 0) {
@@ -83,15 +63,6 @@ function FolderDetails() {
                 {documents.length} document{documents.length !== 1 ? "s" : ""}
               </p>
             </div>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="danger"
-              icon="🗑️"
-              onClick={() => setShowDeleteDialog(true)}
-            >
-              Delete Folder
-            </Button>
           </div>
         </div>
 
@@ -164,18 +135,6 @@ function FolderDetails() {
           )}
         </div>
       </div>
-
-      {/* Delete Confirmation Dialog */}
-      <ConfirmDialog
-        isOpen={showDeleteDialog}
-        onClose={() => setShowDeleteDialog(false)}
-        onConfirm={handleDeleteFolder}
-        title="Delete Folder"
-        message={`Are you sure you want to delete "${name}"? Documents will not be deleted, but they will lose this folder association.`}
-        confirmText="Delete Folder"
-        confirmVariant="danger"
-        loading={deleteLoading}
-      />
     </>
   );
 }

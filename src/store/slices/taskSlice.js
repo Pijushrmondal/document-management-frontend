@@ -111,7 +111,17 @@ export const deleteTask = createAsyncThunk(
             toast.success(SUCCESS_MESSAGES.TASK_DELETE);
             return id;
         } catch (error) {
-            return rejectWithValue(error.message || 'Failed to delete task');
+            // Extract error message from API response
+            let errorMessage = 'Failed to delete task';
+            
+            if (error.response?.data?.message) {
+                errorMessage = error.response.data.message;
+            } else if (error.message && error.message !== 'Failed to delete task') {
+                errorMessage = error.message;
+            }
+            
+            // Don't show toast here - errorMiddleware will handle it
+            return rejectWithValue(errorMessage);
         }
     }
 );
@@ -166,10 +176,26 @@ const taskSlice = createSlice({
         // Optimistic update for drag & drop
         moveTask: (state, action) => {
             const { taskId, newStatus } = action.payload;
-            const task = state.tasks.find(t => t.id === taskId);
+            const task = state.tasks.find(t => {
+                const id = t.id || t._id;
+                return id === taskId;
+            });
             if (task) {
                 task.status = newStatus;
             }
+            // Also update in today's tasks and overdue tasks if present
+            const updateTaskInArray = (arr) => {
+                if (!arr) return;
+                const taskInArray = arr.find(t => {
+                    const id = t.id || t._id;
+                    return id === taskId;
+                });
+                if (taskInArray) {
+                    taskInArray.status = newStatus;
+                }
+            };
+            updateTaskInArray(state.todaysTasks);
+            updateTaskInArray(state.overdueTasks);
         },
     },
     extraReducers: (builder) => {
@@ -265,7 +291,25 @@ const taskSlice = createSlice({
             })
             .addCase(deleteTask.fulfilled, (state, action) => {
                 state.loading = false;
-                state.tasks = state.tasks.filter(t => t.id !== action.payload);
+                // Remove task by matching id or _id
+                const deletedId = action.payload;
+                state.tasks = state.tasks.filter(t => {
+                    const taskId = t.id || t._id;
+                    return taskId !== deletedId;
+                });
+                // Also remove from today's tasks and overdue tasks
+                if (state.todaysTasks) {
+                    state.todaysTasks = state.todaysTasks.filter(t => {
+                        const taskId = t.id || t._id;
+                        return taskId !== deletedId;
+                    });
+                }
+                if (state.overdueTasks) {
+                    state.overdueTasks = state.overdueTasks.filter(t => {
+                        const taskId = t.id || t._id;
+                        return taskId !== deletedId;
+                    });
+                }
             })
             .addCase(deleteTask.rejected, (state, action) => {
                 state.loading = false;
@@ -319,8 +363,24 @@ export const selectTaskLoading = (state) => state.tasks.loading;
 export const selectTaskError = (state) => state.tasks.error;
 
 // Selector: Get tasks by status
-export const selectTasksByStatus = (status) => (state) => {
-    return state.tasks.tasks.filter(task => task.status === status);
+// Maps API statuses to Kanban board statuses:
+// - pending → todo
+// - in_progress → in_progress
+// - completed → done
+export const selectTasksByStatus = (kanbanStatus) => (state) => {
+    // Map Kanban status to API status
+    const statusMap = {
+        'todo': 'pending',
+        'in_progress': 'in_progress',
+        'done': 'completed',
+    };
+    
+    const apiStatus = statusMap[kanbanStatus] || kanbanStatus;
+    
+    return state.tasks.tasks.filter(task => {
+        const taskStatus = task.status || task.taskStatus;
+        return taskStatus === apiStatus;
+    });
 };
 
 // Export reducer

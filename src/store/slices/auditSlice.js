@@ -13,12 +13,11 @@ const initialState = {
     stats: null,
     pagination: {
         page: 1,
-        limit: 20,
+        limit: 15,
         total: 0,
         totalPages: 0,
     },
     filters: {
-        action: '',
         userId: '',
         startDate: '',
         endDate: '',
@@ -129,7 +128,6 @@ const auditSlice = createSlice({
         // Clear filters
         clearFilters: (state) => {
             state.filters = {
-                action: '',
                 userId: '',
                 startDate: '',
                 endDate: '',
@@ -155,13 +153,14 @@ const auditSlice = createSlice({
             })
             .addCase(fetchAuditLogs.fulfilled, (state, action) => {
                 state.loading = false;
+                // Handle new API response structure: { logs: [...], total, page, totalPages }
                 const logsArray = action.payload.logs ||
                     action.payload.docs ||
                     (Array.isArray(action.payload) ? action.payload : []);
                 state.logs = logsArray;
                 state.pagination = {
                     page: action.payload.page || 1,
-                    limit: action.payload.limit || 20,
+                    limit: action.payload.limit || state.pagination.limit || 15,
                     total: action.payload.total || 0,
                     totalPages: action.payload.totalPages || 1,
                 };
@@ -194,6 +193,7 @@ const auditSlice = createSlice({
             })
             .addCase(fetchMyAuditLogs.fulfilled, (state, action) => {
                 state.loading = false;
+                // Handle new API response structure: { logs: [...], total, page, totalPages }
                 const logsArray = action.payload.logs ||
                     action.payload.docs ||
                     (Array.isArray(action.payload) ? action.payload : []);
@@ -201,7 +201,7 @@ const auditSlice = createSlice({
                 // Update pagination for my logs too
                 state.pagination = {
                     page: action.payload.page || 1,
-                    limit: action.payload.limit || 20,
+                    limit: action.payload.limit || state.pagination.limit || 15,
                     total: action.payload.total || 0,
                     totalPages: action.payload.totalPages || 1,
                 };

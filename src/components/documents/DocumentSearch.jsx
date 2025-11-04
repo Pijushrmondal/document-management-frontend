@@ -27,10 +27,16 @@ function DocumentSearch({ onSearch }) {
         : scopeValue.split(",").map((id) => id.trim());
 
     try {
-      await dispatch(searchDocuments({ query, scope, ids })).unwrap();
+      const result = await dispatch(searchDocuments({ query, scope, ids })).unwrap();
+      // Log for debugging
+      if (import.meta.env.DEV) {
+        console.log('Search completed:', { query, scope, ids, result });
+      }
       if (onSearch) onSearch();
     } catch (error) {
       console.error("Search failed:", error);
+      // Still call onSearch to show error state
+      if (onSearch) onSearch();
     }
   };
 

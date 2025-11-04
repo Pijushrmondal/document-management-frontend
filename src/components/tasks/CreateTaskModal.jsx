@@ -1,6 +1,6 @@
 // src/components/tasks/CreateTaskModal.jsx
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   createTask,
@@ -15,6 +15,8 @@ import {
   TASK_TYPE_LABELS,
   TASK_CHANNELS,
   TASK_CHANNEL_LABELS,
+  TASK_STATUS,
+  TASK_STATUS_LABELS,
 } from "../../utils/constants";
 
 function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
@@ -24,19 +26,60 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
   const isEditing = !!existingTask;
 
   const [formData, setFormData] = useState({
-    source: existingTask?.source || "",
-    type: existingTask?.type || "follow_up",
-    channel: existingTask?.channel || "email",
-    target: existingTask?.target || "",
-    title: existingTask?.title || "",
-    description: existingTask?.description || "",
-    dueDate: existingTask?.dueDate ? existingTask.dueDate.split("T")[0] : "",
+    source: "",
+    type: "follow_up",
+    channel: "email",
+    target: "",
+    title: "",
+    description: "",
+    status: "pending",
+    dueDate: "",
     metadataKey: "",
     metadataValue: "",
   });
 
-  const [metadata, setMetadata] = useState(existingTask?.metadata || {});
+  const [metadata, setMetadata] = useState({});
   const [errors, setErrors] = useState({});
+
+  // Update form data when existingTask changes (for editing)
+  useEffect(() => {
+    if (existingTask && isOpen) {
+      setFormData({
+        source: existingTask.source || "",
+        type: existingTask.type || "follow_up",
+        channel: existingTask.channel || "email",
+        target: existingTask.target || "",
+        title: existingTask.title || "",
+        description: existingTask.description || existingTask.notes || "",
+        status: existingTask.status || "pending",
+        dueDate: existingTask.dueDate 
+          ? (existingTask.dueDate.includes('T') 
+              ? existingTask.dueDate.split("T")[0] 
+              : existingTask.dueDate.split(" ")[0])
+          : "",
+        metadataKey: "",
+        metadataValue: "",
+      });
+      setMetadata(existingTask.metadata || {});
+      setErrors({});
+    } else if (!existingTask && isOpen) {
+      // Reset form when creating new task
+      setFormData({
+        source: "",
+        type: "follow_up",
+        channel: "email",
+        target: "",
+        title: "",
+        description: "",
+        status: "pending",
+        dueDate: "",
+        metadataKey: "",
+        metadataValue: "",
+      });
+      setMetadata({});
+      setErrors({});
+    }
+  }, [existingTask, isOpen]);
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -80,27 +123,46 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
         dueDateISO = date.toISOString();
       }
 
-      const taskData = {
-        source: formData.source || undefined,
-        type: formData.type,
-        channel: formData.channel,
-        target: formData.target || undefined,
-        title: formData.title,
-        description: formData.description || undefined,
-        dueDate: dueDateISO || undefined,
-        metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
-      };
-
-      // Remove undefined fields
-      Object.keys(taskData).forEach(
-        (key) => taskData[key] === undefined && delete taskData[key]
-      );
-
       if (isEditing) {
+        // API only accepts: status, notes (mapped from description), dueDate
+        const taskId = existingTask.id || existingTask._id;
+        if (!taskId) {
+          console.error("Task ID not found");
+          return;
+        }
+        
+        const updates = {
+          status: formData.status,
+          notes: formData.description || undefined,
+          dueDate: dueDateISO || undefined,
+        };
+        
+        // Remove undefined fields
+        Object.keys(updates).forEach(
+          (key) => updates[key] === undefined && delete updates[key]
+        );
+        
         await dispatch(
-          updateTask({ id: existingTask.id, updates: taskData })
+          updateTask({ id: taskId, updates })
         ).unwrap();
       } else {
+        // For creating, send all fields
+        const taskData = {
+          source: formData.source || undefined,
+          type: formData.type,
+          channel: formData.channel,
+          target: formData.target || undefined,
+          title: formData.title,
+          description: formData.description || undefined,
+          dueDate: dueDateISO || undefined,
+          metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
+        };
+
+        // Remove undefined fields
+        Object.keys(taskData).forEach(
+          (key) => taskData[key] === undefined && delete taskData[key]
+        );
+        
         await dispatch(createTask(taskData)).unwrap();
       }
 
@@ -112,6 +174,7 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
         target: "",
         title: "",
         description: "",
+        status: "pending",
         dueDate: "",
         metadataKey: "",
         metadataValue: "",
@@ -134,6 +197,7 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
         target: "",
         title: "",
         description: "",
+        status: "pending",
         dueDate: "",
         metadataKey: "",
         metadataValue: "",
@@ -185,194 +249,250 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
       }
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Source and Type */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Source */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Source
-            </label>
-            <input
-              type="text"
-              value={formData.source}
-              onChange={(e) => handleChange("source", e.target.value)}
-              placeholder="e.g., scanner-01 (optional)"
-              disabled={loading}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          {/* Type */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Type <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={formData.type}
-              onChange={(e) => handleChange("type", e.target.value)}
-              disabled={loading}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              {Object.entries(TASK_TYPE_LABELS).map(([key, label]) => (
-                <option key={key} value={key}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Channel and Target */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Channel */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Channel <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={formData.channel}
-              onChange={(e) => handleChange("channel", e.target.value)}
-              disabled={loading}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              {Object.entries(TASK_CHANNEL_LABELS).map(([key, label]) => (
-                <option key={key} value={key}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Target */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Target
-            </label>
-            <input
-              type="text"
-              value={formData.target}
-              onChange={(e) => handleChange("target", e.target.value)}
-              placeholder={
-                formData.channel === "email"
-                  ? "user@example.com"
-                  : formData.channel === "phone"
-                  ? "+1234567890"
-                  : "https://example.com"
-              }
-              disabled={loading}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-        </div>
-
-        {/* Title */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Title <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={formData.title}
-            onChange={(e) => handleChange("title", e.target.value)}
-            placeholder="Enter task title"
-            disabled={loading}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-              errors.title ? "border-red-500" : "border-gray-300"
-            }`}
-          />
-          {errors.title && (
-            <p className="mt-1 text-sm text-red-600">{errors.title}</p>
-          )}
-        </div>
-
-        {/* Description */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Description
-          </label>
-          <textarea
-            value={formData.description}
-            onChange={(e) => handleChange("description", e.target.value)}
-            placeholder="Enter task description (optional)"
-            rows={3}
-            disabled={loading}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-          />
-        </div>
-
-        {/* Due Date */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Due Date
-          </label>
-          <input
-            type="date"
-            value={formData.dueDate}
-            onChange={(e) => handleChange("dueDate", e.target.value)}
-            disabled={loading}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-        </div>
-
-        {/* Metadata */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Metadata (Optional)
-          </label>
-          <div className="space-y-2">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={formData.metadataKey}
-                onChange={(e) => handleChange("metadataKey", e.target.value)}
-                placeholder="Key (e.g., invoiceId)"
+        {isEditing ? (
+          <>
+            {/* Edit Mode - Only show editable fields: Status, Notes, Due Date */}
+            {/* Status */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Status <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={formData.status}
+                onChange={(e) => handleChange("status", e.target.value)}
                 disabled={loading}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <input
-                type="text"
-                value={formData.metadataValue}
-                onChange={(e) => handleChange("metadataValue", e.target.value)}
-                placeholder="Value (e.g., INV-12345)"
-                disabled={loading}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleAddMetadata}
-                disabled={
-                  loading || !formData.metadataKey || !formData.metadataValue
-                }
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                Add
-              </Button>
-            </div>
-            {Object.keys(metadata).length > 0 && (
-              <div className="mt-2 space-y-1">
-                {Object.entries(metadata).map(([key, value]) => (
-                  <div
-                    key={key}
-                    className="flex items-center justify-between p-2 bg-gray-50 rounded border border-gray-200"
-                  >
-                    <span className="text-sm">
-                      <span className="font-medium">{key}:</span>{" "}
-                      {String(value)}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveMetadata(key)}
-                      disabled={loading}
-                      className="text-red-600 hover:text-red-800 text-sm"
-                    >
-                      Remove
-                    </button>
-                  </div>
+                {Object.entries(TASK_STATUS_LABELS).map(([key, label]) => (
+                  <option key={key} value={key}>
+                    {label}
+                  </option>
                 ))}
+              </select>
+            </div>
+
+            {/* Notes (Description) */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Notes
+              </label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => handleChange("description", e.target.value)}
+                placeholder="Enter notes (optional)"
+                rows={3}
+                disabled={loading}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              />
+            </div>
+
+            {/* Due Date */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Due Date
+              </label>
+              <input
+                type="date"
+                value={formData.dueDate}
+                onChange={(e) => handleChange("dueDate", e.target.value)}
+                disabled={loading}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Create Mode - Show all fields */}
+            {/* Source and Type */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Source */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Source
+                </label>
+                <input
+                  type="text"
+                  value={formData.source}
+                  onChange={(e) => handleChange("source", e.target.value)}
+                  placeholder="e.g., scanner-01 (optional)"
+                  disabled={loading}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
               </div>
-            )}
-          </div>
-        </div>
+
+              {/* Type */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Type <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={formData.type}
+                  onChange={(e) => handleChange("type", e.target.value)}
+                  disabled={loading}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  {Object.entries(TASK_TYPE_LABELS).map(([key, label]) => (
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Channel and Target */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Channel */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Channel <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={formData.channel}
+                  onChange={(e) => handleChange("channel", e.target.value)}
+                  disabled={loading}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  {Object.entries(TASK_CHANNEL_LABELS).map(([key, label]) => (
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Target */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Target
+                </label>
+                <input
+                  type="text"
+                  value={formData.target}
+                  onChange={(e) => handleChange("target", e.target.value)}
+                  placeholder={
+                    formData.channel === "email"
+                      ? "user@example.com"
+                      : formData.channel === "phone"
+                      ? "+1234567890"
+                      : "https://example.com"
+                  }
+                  disabled={loading}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            {/* Title */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Title <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => handleChange("title", e.target.value)}
+                placeholder="Enter task title"
+                disabled={loading}
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  errors.title ? "border-red-500" : "border-gray-300"
+                }`}
+              />
+              {errors.title && (
+                <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+              )}
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Description
+              </label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => handleChange("description", e.target.value)}
+                placeholder="Enter task description (optional)"
+                rows={3}
+                disabled={loading}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              />
+            </div>
+
+            {/* Due Date */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Due Date
+              </label>
+              <input
+                type="date"
+                value={formData.dueDate}
+                onChange={(e) => handleChange("dueDate", e.target.value)}
+                disabled={loading}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Metadata */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Metadata (Optional)
+              </label>
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={formData.metadataKey}
+                    onChange={(e) => handleChange("metadataKey", e.target.value)}
+                    placeholder="Key (e.g., invoiceId)"
+                    disabled={loading}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <input
+                    type="text"
+                    value={formData.metadataValue}
+                    onChange={(e) => handleChange("metadataValue", e.target.value)}
+                    placeholder="Value (e.g., INV-12345)"
+                    disabled={loading}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleAddMetadata}
+                    disabled={
+                      loading || !formData.metadataKey || !formData.metadataValue
+                    }
+                  >
+                    Add
+                  </Button>
+                </div>
+                {Object.keys(metadata).length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    {Object.entries(metadata).map(([key, value]) => (
+                      <div
+                        key={key}
+                        className="flex items-center justify-between p-2 bg-gray-50 rounded border border-gray-200"
+                      >
+                        <span className="text-sm">
+                          <span className="font-medium">{key}:</span>{" "}
+                          {String(value)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveMetadata(key)}
+                          disabled={loading}
+                          className="text-red-600 hover:text-red-800 text-sm"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        )}
       </form>
     </Modal>
   );

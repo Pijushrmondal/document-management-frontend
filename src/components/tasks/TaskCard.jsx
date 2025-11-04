@@ -14,12 +14,23 @@ function TaskCard({ task, onEdit, onView, isDragging = false }) {
   const [loading, setLoading] = useState(false);
 
   const handleDelete = async (e) => {
-    e.stopPropagation();
+    // Stop propagation if called from click event
+    if (e && e.stopPropagation) {
+      e.stopPropagation();
+    }
     setLoading(true);
     try {
-      await dispatch(deleteTask(task.id)).unwrap();
+      // Use task.id or task._id as fallback
+      const taskId = task.id || task._id;
+      if (!taskId) {
+        console.error("Task ID not found");
+        return;
+      }
+      await dispatch(deleteTask(taskId)).unwrap();
       setShowDeleteDialog(false);
     } catch (error) {
+      // Error is already shown via toast in the thunk/errorMiddleware
+      // Keep dialog open so user can see the error and try again if needed
       console.error("Delete failed:", error);
     } finally {
       setLoading(false);

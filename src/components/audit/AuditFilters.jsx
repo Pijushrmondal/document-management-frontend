@@ -8,7 +8,6 @@ import {
   selectAuditFilters,
 } from "../../store/slices/auditSlice";
 import Button from "../common/Button";
-import { AUDIT_ACTIONS } from "../../utils/constants";
 
 function AuditFilters({ onApply }) {
   const dispatch = useDispatch();
@@ -27,7 +26,6 @@ function AuditFilters({ onApply }) {
 
   const handleClear = () => {
     const emptyFilters = {
-      action: "",
       userId: "",
       startDate: "",
       endDate: "",
@@ -53,26 +51,7 @@ function AuditFilters({ onApply }) {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Action Filter */}
-        <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">
-            Action Type
-          </label>
-          <select
-            value={localFilters.action}
-            onChange={(e) => handleChange("action", e.target.value)}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">All Actions</option>
-            {Object.entries(AUDIT_ACTIONS).map(([key, value]) => (
-              <option key={value} value={value}>
-                {value}
-              </option>
-            ))}
-          </select>
-        </div>
-
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* User ID Filter */}
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1">

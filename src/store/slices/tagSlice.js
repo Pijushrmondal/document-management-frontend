@@ -74,7 +74,21 @@ export const deleteTag = createAsyncThunk(
             toast.success(SUCCESS_MESSAGES.TAG_DELETE);
             return id;
         } catch (error) {
-            return rejectWithValue(error.message || 'Failed to delete tag');
+            // Extract error message from API response
+            // The API interceptor may have already set error.message from error.response.data.message
+            // But we check both to be safe
+            let errorMessage = 'Failed to delete tag';
+            
+            if (error.response?.data?.message) {
+                errorMessage = error.response.data.message;
+            } else if (error.message && error.message !== 'Failed to delete tag') {
+                // Use error.message if it's been set by the interceptor and is not the default
+                errorMessage = error.message;
+            }
+            
+            // Don't show toast here - errorMiddleware will handle it
+            // Return the error message so middleware can display it
+            return rejectWithValue(errorMessage);
         }
     }
 );

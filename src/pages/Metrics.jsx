@@ -11,21 +11,21 @@ import TaskMetrics from "../components/metrics/TaskMetrics";
 import SystemMetrics from "../components/metrics/SystemMetrics";
 import { USER_ROLES } from "../utils/constants";
 import {
-  fetchAllMetrics,
-  selectAllMetrics,
+  fetchMyMetrics,
+  selectMyMetrics,
   selectMetricLoading,
 } from "../store/slices/metricsSlice";
 
 function Metrics() {
   const dispatch = useDispatch();
-  const allMetrics = useSelector(selectAllMetrics);
+  const myMetrics = useSelector(selectMyMetrics);
   const loading = useSelector(selectMetricLoading);
   const user = useSelector(selectUser);
 
   const isAdmin = user?.role === USER_ROLES.ADMIN;
 
   useEffect(() => {
-    dispatch(fetchAllMetrics());
+    dispatch(fetchMyMetrics());
   }, [dispatch]);
 
   return (
@@ -43,7 +43,7 @@ function Metrics() {
       </div>
 
       {/* Quick Stats */}
-      <QuickStats metrics={allMetrics} />
+      <QuickStats metrics={myMetrics} />
 
       {/* Detailed Metrics */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

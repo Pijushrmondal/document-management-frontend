@@ -15,8 +15,15 @@ function ConfirmDialog({
   loading = false,
 }) {
   const handleConfirm = async () => {
+    try {
     await onConfirm();
+      // Only close if onConfirm doesn't throw an error
+      // Parent component should handle closing on success
     onClose();
+    } catch (error) {
+      // Don't close dialog on error - let parent handle it
+      // Error is likely already handled by the parent component
+    }
   };
 
   return (

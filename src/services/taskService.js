@@ -45,11 +45,17 @@ const taskService = {
     /**
      * Update task
      * @param {string} id - Task ID
-     * @param {object} updates - Task updates
+     * @param {object} updates - Task updates (only status, notes, dueDate allowed)
      * @returns {Promise} Updated task
      */
     update: async (id, updates) => {
-        const response = await apiService.put(`${API_ENDPOINTS.TASKS}/${id}`, updates);
+        // API only accepts: status, notes, dueDate
+        const allowedUpdates = {};
+        if (updates.status !== undefined) allowedUpdates.status = updates.status;
+        if (updates.notes !== undefined) allowedUpdates.notes = updates.notes;
+        if (updates.dueDate !== undefined) allowedUpdates.dueDate = updates.dueDate;
+        
+        const response = await apiService.patch(`${API_ENDPOINTS.TASKS}/${id}`, allowedUpdates);
         return response;
     },
 

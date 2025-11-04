@@ -45,13 +45,25 @@ function Audit() {
   }, []);
 
   const loadLogs = (page) => {
+    // Build params with proper mapping
     const params = {
       page,
       limit: pagination.limit,
-      ...filters,
     };
-    // Fetch all logs for admin, or user's own logs for regular users
+    
+    // Map date filters to from/to format
+    if (filters.startDate) {
+      params.from = filters.startDate;
+    }
+    if (filters.endDate) {
+      params.to = filters.endDate;
+    }
+    
+    // Fetch all logs for admin (with userId filter if provided), or user's own logs for regular users
     if (isAdmin) {
+      if (filters.userId) {
+        params.userId = filters.userId;
+      }
       dispatch(fetchAuditLogs(params));
     } else {
       dispatch(fetchMyAuditLogs(params));
@@ -145,7 +157,7 @@ function Audit() {
       </div>
 
       {/* Pagination */}
-      {!loading && logs.length > 0 && pagination.totalPages > 1 && (
+      {!loading && pagination.totalPages > 0 && (
         <Pagination
           currentPage={pagination.page}
           totalPages={pagination.totalPages}

@@ -4,9 +4,12 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchActions,
+  fetchMonthlyUsage,
+  fetchAllTimeUsage,
   selectActions,
   selectActionPagination,
   selectActionLoading,
+  selectActionUsage,
 } from "../store/slices/actionSlice";
 import Card from "../components/common/Card";
 import Button from "../components/common/Button";
@@ -20,11 +23,20 @@ function Actions() {
   const actions = useSelector(selectActions);
   const pagination = useSelector(selectActionPagination);
   const loading = useSelector(selectActionLoading);
+  const usage = useSelector(selectActionUsage);
 
   const [showRunner, setShowRunner] = useState(false);
 
   useEffect(() => {
     dispatch(fetchActions({ page: 1, limit: 20 }));
+    // Fetch monthly usage for Total Actions count
+    const now = new Date();
+    dispatch(
+      fetchMonthlyUsage({
+        year: now.getFullYear(),
+        month: now.getMonth() + 1,
+      })
+    );
   }, [dispatch]);
 
   const handlePageChange = (page) => {
@@ -34,6 +46,15 @@ function Actions() {
   const handleActionSuccess = () => {
     setShowRunner(false);
     dispatch(fetchActions({ page: 1, limit: pagination.limit }));
+    // Refresh usage stats after running action
+    const now = new Date();
+    dispatch(
+      fetchMonthlyUsage({
+        year: now.getFullYear(),
+        month: now.getMonth() + 1,
+      })
+    );
+    dispatch(fetchAllTimeUsage());
   };
 
   return (
@@ -67,6 +88,17 @@ function Actions() {
           <div className="flex items-center space-x-8">
             <div>
               <p className="text-sm text-gray-500">Total Actions</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {usage.monthly?.actionsCount || 0}
+              </p>
+              {/* {usage.monthly?.period && (
+                <p className="text-xs text-gray-400 mt-1">
+                  Period: {usage.monthly.period}
+                </p>
+              )} */}
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">History Items</p>
               <p className="text-2xl font-semibold text-gray-900">
                 {pagination.total}
               </p>

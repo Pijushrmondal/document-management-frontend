@@ -38,9 +38,17 @@ function TaskDetails() {
   const handleDelete = async () => {
     setDeleteLoading(true);
     try {
-      await dispatch(deleteTask(task.id)).unwrap();
+      // Use task.id or task._id as fallback
+      const taskId = task.id || task._id;
+      if (!taskId) {
+        console.error("Task ID not found");
+        setDeleteLoading(false);
+        return;
+      }
+      await dispatch(deleteTask(taskId)).unwrap();
       navigate("/tasks");
     } catch (error) {
+      // Error is already shown via toast in the thunk/errorMiddleware
       console.error("Delete failed:", error);
       setDeleteLoading(false);
     }
