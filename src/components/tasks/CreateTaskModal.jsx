@@ -1,5 +1,3 @@
-// src/components/tasks/CreateTaskModal.jsx
-
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -41,7 +39,6 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
   const [metadata, setMetadata] = useState({});
   const [errors, setErrors] = useState({});
 
-  // Update form data when existingTask changes (for editing)
   useEffect(() => {
     if (existingTask && isOpen) {
       setFormData({
@@ -63,7 +60,6 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
       setMetadata(existingTask.metadata || {});
       setErrors({});
     } else if (!existingTask && isOpen) {
-      // Reset form when creating new task
       setFormData({
         source: "",
         type: "follow_up",
@@ -83,17 +79,14 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error for this field
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
   const validate = () => {
-    // Create a validation object with all required fields
     const validationData = {
       ...formData,
-      // For validation, use ISO string format for dueDate
       dueDate: formData.dueDate
         ? new Date(formData.dueDate).toISOString()
         : null,
@@ -114,17 +107,14 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
     if (!validate()) return;
 
     try {
-      // Format dueDate as ISO string with time
       let dueDateISO = null;
       if (formData.dueDate) {
         const date = new Date(formData.dueDate);
-        // Set to end of day if no time specified
         date.setHours(23, 59, 59, 999);
         dueDateISO = date.toISOString();
       }
 
       if (isEditing) {
-        // API only accepts: status, notes (mapped from description), dueDate
         const taskId = existingTask.id || existingTask._id;
         if (!taskId) {
           console.error("Task ID not found");
@@ -137,7 +127,6 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
           dueDate: dueDateISO || undefined,
         };
         
-        // Remove undefined fields
         Object.keys(updates).forEach(
           (key) => updates[key] === undefined && delete updates[key]
         );
@@ -146,7 +135,6 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
           updateTask({ id: taskId, updates })
         ).unwrap();
       } else {
-        // For creating, send all fields
         const taskData = {
           source: formData.source || undefined,
           type: formData.type,
@@ -158,7 +146,6 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
           metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
         };
 
-        // Remove undefined fields
         Object.keys(taskData).forEach(
           (key) => taskData[key] === undefined && delete taskData[key]
         );
@@ -166,7 +153,6 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
         await dispatch(createTask(taskData)).unwrap();
       }
 
-      // Reset and close
       setFormData({
         source: "",
         type: "follow_up",
@@ -251,8 +237,6 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
       <form onSubmit={handleSubmit} className="space-y-4">
         {isEditing ? (
           <>
-            {/* Edit Mode - Only show editable fields: Status, Notes, Due Date */}
-            {/* Status */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Status <span className="text-red-500">*</span>
@@ -271,7 +255,6 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
               </select>
             </div>
 
-            {/* Notes (Description) */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Notes
@@ -302,10 +285,7 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
           </>
         ) : (
           <>
-            {/* Create Mode - Show all fields */}
-            {/* Source and Type */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Source */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Source
@@ -320,7 +300,6 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
                 />
               </div>
 
-              {/* Type */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Type <span className="text-red-500">*</span>
@@ -340,9 +319,7 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
               </div>
             </div>
 
-            {/* Channel and Target */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Channel */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Channel <span className="text-red-500">*</span>
@@ -361,7 +338,6 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
                 </select>
               </div>
 
-              {/* Target */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Target
@@ -383,7 +359,6 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
               </div>
             </div>
 
-            {/* Title */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Title <span className="text-red-500">*</span>
@@ -403,7 +378,6 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
               )}
             </div>
 
-            {/* Description */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Description
@@ -432,7 +406,6 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
               />
             </div>
 
-            {/* Metadata */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Metadata (Optional)

@@ -1,12 +1,9 @@
-// src/components/common/Pagination.jsx
-
 function Pagination({
   currentPage,
   totalPages,
   onPageChange,
   loading = false,
 }) {
-  // Don't render if invalid data
   if (!totalPages || totalPages <= 0 || !currentPage) return null;
 
   const getPageNumbers = () => {
@@ -76,7 +73,6 @@ function Pagination({
             className="isolate inline-flex -space-x-px rounded-md shadow-sm"
             aria-label="Pagination"
           >
-            {/* Previous Button */}
             <button
               onClick={() => onPageChange(currentPage - 1)}
               disabled={currentPage === 1 || loading}
@@ -92,7 +88,6 @@ function Pagination({
               </svg>
             </button>
 
-            {/* Page Numbers */}
             {pages.map((page, index) => {
               if (page === "...") {
                 return (
@@ -121,7 +116,6 @@ function Pagination({
               );
             })}
 
-            {/* Next Button */}
             <button
               onClick={() => onPageChange(currentPage + 1)}
               disabled={currentPage === totalPages || loading}

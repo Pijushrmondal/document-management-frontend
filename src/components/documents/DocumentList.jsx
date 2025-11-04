@@ -1,5 +1,3 @@
-// src/components/documents/DocumentList.jsx
-
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import {
@@ -165,7 +163,6 @@ function DocumentList({ documents, loading }) {
         </table>
       </div>
 
-      {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         isOpen={!!deleteDocId}
         onClose={() => setDeleteDocId(null)}

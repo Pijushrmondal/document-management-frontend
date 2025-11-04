@@ -1,13 +1,8 @@
-// src/store/slices/tagSlice.js
-
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import tagService from '../../services/tagService';
 import { SUCCESS_MESSAGES } from '../../utils/constants';
 import toast from 'react-hot-toast';
 
-/**
- * Initial state
- */
 const initialState = {
     tags: [],
     folders: [],
@@ -17,9 +12,6 @@ const initialState = {
     error: null,
 };
 
-/**
- * Async thunk: Fetch all tags
- */
 export const fetchTags = createAsyncThunk(
     'tags/fetchAll',
     async (_, { rejectWithValue }) => {
@@ -32,9 +24,6 @@ export const fetchTags = createAsyncThunk(
     }
 );
 
-/**
- * Async thunk: Fetch tag by ID
- */
 export const fetchTagById = createAsyncThunk(
     'tags/fetchById',
     async (id, { rejectWithValue }) => {
@@ -47,9 +36,6 @@ export const fetchTagById = createAsyncThunk(
     }
 );
 
-/**
- * Async thunk: Create tag
- */
 export const createTag = createAsyncThunk(
     'tags/create',
     async (name, { rejectWithValue }) => {
@@ -63,9 +49,6 @@ export const createTag = createAsyncThunk(
     }
 );
 
-/**
- * Async thunk: Delete tag
- */
 export const deleteTag = createAsyncThunk(
     'tags/delete',
     async (id, { rejectWithValue }) => {
@@ -74,28 +57,19 @@ export const deleteTag = createAsyncThunk(
             toast.success(SUCCESS_MESSAGES.TAG_DELETE);
             return id;
         } catch (error) {
-            // Extract error message from API response
-            // The API interceptor may have already set error.message from error.response.data.message
-            // But we check both to be safe
             let errorMessage = 'Failed to delete tag';
             
             if (error.response?.data?.message) {
                 errorMessage = error.response.data.message;
             } else if (error.message && error.message !== 'Failed to delete tag') {
-                // Use error.message if it's been set by the interceptor and is not the default
                 errorMessage = error.message;
             }
             
-            // Don't show toast here - errorMiddleware will handle it
-            // Return the error message so middleware can display it
             return rejectWithValue(errorMessage);
         }
     }
 );
 
-/**
- * Async thunk: Fetch folders
- */
 export const fetchFolders = createAsyncThunk(
     'tags/fetchFolders',
     async (_, { rejectWithValue }) => {
@@ -108,9 +82,6 @@ export const fetchFolders = createAsyncThunk(
     }
 );
 
-/**
- * Async thunk: Fetch folder documents
- */
 export const fetchFolderDocuments = createAsyncThunk(
     'tags/fetchFolderDocuments',
     async (folderName, { rejectWithValue }) => {
@@ -123,26 +94,20 @@ export const fetchFolderDocuments = createAsyncThunk(
     }
 );
 
-/**
- * Tag slice
- */
 const tagSlice = createSlice({
     name: 'tags',
     initialState,
     reducers: {
-        // Clear current folder
         clearCurrentFolder: (state) => {
             state.currentFolder = null;
             state.folderDocuments = [];
         },
 
-        // Clear error
         clearError: (state) => {
             state.error = null;
         },
     },
     extraReducers: (builder) => {
-        // Fetch tags
         builder
             .addCase(fetchTags.pending, (state) => {
                 state.loading = true;
@@ -157,7 +122,6 @@ const tagSlice = createSlice({
                 state.error = action.payload;
             });
 
-        // Fetch tag by ID
         builder
             .addCase(fetchTagById.pending, (state) => {
                 state.loading = true;
@@ -165,14 +129,12 @@ const tagSlice = createSlice({
             })
             .addCase(fetchTagById.fulfilled, (state, action) => {
                 state.loading = false;
-                // Could store current tag if needed
             })
             .addCase(fetchTagById.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             });
 
-        // Create tag
         builder
             .addCase(createTag.pending, (state) => {
                 state.loading = true;
@@ -187,7 +149,6 @@ const tagSlice = createSlice({
                 state.error = action.payload;
             });
 
-        // Delete tag
         builder
             .addCase(deleteTag.pending, (state) => {
                 state.loading = true;
@@ -203,7 +164,6 @@ const tagSlice = createSlice({
                 state.error = action.payload;
             });
 
-        // Fetch folders
         builder
             .addCase(fetchFolders.pending, (state) => {
                 state.loading = true;
@@ -218,7 +178,6 @@ const tagSlice = createSlice({
                 state.error = action.payload;
             });
 
-        // Fetch folder documents
         builder
             .addCase(fetchFolderDocuments.pending, (state) => {
                 state.loading = true;

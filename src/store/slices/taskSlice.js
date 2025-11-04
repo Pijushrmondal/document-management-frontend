@@ -1,13 +1,8 @@
-// src/store/slices/taskSlice.js
-
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import taskService from '../../services/taskService';
 import { SUCCESS_MESSAGES } from '../../utils/constants';
 import toast from 'react-hot-toast';
 
-/**
- * Initial state
- */
 const initialState = {
     tasks: [],
     currentTask: null,
@@ -23,9 +18,6 @@ const initialState = {
     error: null,
 };
 
-/**
- * Async thunk: Fetch tasks
- */
 export const fetchTasks = createAsyncThunk(
     'tasks/fetchAll',
     async ({ page = 1, limit = 50 } = {}, { rejectWithValue }) => {
@@ -38,9 +30,6 @@ export const fetchTasks = createAsyncThunk(
     }
 );
 
-/**
- * Async thunk: Fetch task by ID
- */
 export const fetchTaskById = createAsyncThunk(
     'tasks/fetchById',
     async (id, { rejectWithValue }) => {
@@ -53,9 +42,6 @@ export const fetchTaskById = createAsyncThunk(
     }
 );
 
-/**
- * Async thunk: Create task
- */
 export const createTask = createAsyncThunk(
     'tasks/create',
     async (taskData, { rejectWithValue }) => {
@@ -69,9 +55,6 @@ export const createTask = createAsyncThunk(
     }
 );
 
-/**
- * Async thunk: Update task
- */
 export const updateTask = createAsyncThunk(
     'tasks/update',
     async ({ id, updates }, { rejectWithValue }) => {
@@ -85,9 +68,6 @@ export const updateTask = createAsyncThunk(
     }
 );
 
-/**
- * Async thunk: Update task status
- */
 export const updateTaskStatus = createAsyncThunk(
     'tasks/updateStatus',
     async ({ id, status }, { rejectWithValue }) => {
@@ -100,9 +80,6 @@ export const updateTaskStatus = createAsyncThunk(
     }
 );
 
-/**
- * Async thunk: Delete task
- */
 export const deleteTask = createAsyncThunk(
     'tasks/delete',
     async (id, { rejectWithValue }) => {
@@ -111,7 +88,6 @@ export const deleteTask = createAsyncThunk(
             toast.success(SUCCESS_MESSAGES.TASK_DELETE);
             return id;
         } catch (error) {
-            // Extract error message from API response
             let errorMessage = 'Failed to delete task';
             
             if (error.response?.data?.message) {
@@ -120,15 +96,11 @@ export const deleteTask = createAsyncThunk(
                 errorMessage = error.message;
             }
             
-            // Don't show toast here - errorMiddleware will handle it
             return rejectWithValue(errorMessage);
         }
     }
 );
 
-/**
- * Async thunk: Fetch today's tasks
- */
 export const fetchTodaysTasks = createAsyncThunk(
     'tasks/fetchToday',
     async (_, { rejectWithValue }) => {
@@ -141,9 +113,6 @@ export const fetchTodaysTasks = createAsyncThunk(
     }
 );
 
-/**
- * Async thunk: Fetch overdue tasks
- */
 export const fetchOverdueTasks = createAsyncThunk(
     'tasks/fetchOverdue',
     async (_, { rejectWithValue }) => {
@@ -156,24 +125,18 @@ export const fetchOverdueTasks = createAsyncThunk(
     }
 );
 
-/**
- * Task slice
- */
 const taskSlice = createSlice({
     name: 'tasks',
     initialState,
     reducers: {
-        // Clear current task
         clearCurrentTask: (state) => {
             state.currentTask = null;
         },
 
-        // Clear error
         clearError: (state) => {
             state.error = null;
         },
 
-        // Optimistic update for drag & drop
         moveTask: (state, action) => {
             const { taskId, newStatus } = action.payload;
             const task = state.tasks.find(t => {
@@ -183,7 +146,6 @@ const taskSlice = createSlice({
             if (task) {
                 task.status = newStatus;
             }
-            // Also update in today's tasks and overdue tasks if present
             const updateTaskInArray = (arr) => {
                 if (!arr) return;
                 const taskInArray = arr.find(t => {
@@ -199,7 +161,6 @@ const taskSlice = createSlice({
         },
     },
     extraReducers: (builder) => {
-        // Fetch tasks
         builder
             .addCase(fetchTasks.pending, (state) => {
                 state.loading = true;
@@ -223,7 +184,6 @@ const taskSlice = createSlice({
                 state.error = action.payload;
             });
 
-        // Fetch task by ID
         builder
             .addCase(fetchTaskById.pending, (state) => {
                 state.loading = true;
@@ -238,7 +198,6 @@ const taskSlice = createSlice({
                 state.error = action.payload;
             });
 
-        // Create task
         builder
             .addCase(createTask.pending, (state) => {
                 state.loading = true;
@@ -253,7 +212,6 @@ const taskSlice = createSlice({
                 state.error = action.payload;
             });
 
-        // Update task
         builder
             .addCase(updateTask.pending, (state) => {
                 state.loading = true;
@@ -274,7 +232,6 @@ const taskSlice = createSlice({
                 state.error = action.payload;
             });
 
-        // Update task status
         builder
             .addCase(updateTaskStatus.fulfilled, (state, action) => {
                 const index = state.tasks.findIndex(t => t.id === action.payload.id);
@@ -283,7 +240,6 @@ const taskSlice = createSlice({
                 }
             });
 
-        // Delete task
         builder
             .addCase(deleteTask.pending, (state) => {
                 state.loading = true;
@@ -291,13 +247,11 @@ const taskSlice = createSlice({
             })
             .addCase(deleteTask.fulfilled, (state, action) => {
                 state.loading = false;
-                // Remove task by matching id or _id
                 const deletedId = action.payload;
                 state.tasks = state.tasks.filter(t => {
                     const taskId = t.id || t._id;
                     return taskId !== deletedId;
                 });
-                // Also remove from today's tasks and overdue tasks
                 if (state.todaysTasks) {
                     state.todaysTasks = state.todaysTasks.filter(t => {
                         const taskId = t.id || t._id;
@@ -316,7 +270,6 @@ const taskSlice = createSlice({
                 state.error = action.payload;
             });
 
-        // Fetch today's tasks
         builder
             .addCase(fetchTodaysTasks.pending, (state) => {
                 state.loading = true;
@@ -332,7 +285,6 @@ const taskSlice = createSlice({
                 state.error = action.payload;
             });
 
-        // Fetch overdue tasks
         builder
             .addCase(fetchOverdueTasks.pending, (state) => {
                 state.loading = true;
@@ -350,10 +302,8 @@ const taskSlice = createSlice({
     },
 });
 
-// Export actions
 export const { clearCurrentTask, clearError, moveTask } = taskSlice.actions;
 
-// Export selectors
 export const selectTasks = (state) => state.tasks.tasks;
 export const selectCurrentTask = (state) => state.tasks.currentTask;
 export const selectTodaysTasks = (state) => state.tasks.todaysTasks;
@@ -362,13 +312,7 @@ export const selectTaskPagination = (state) => state.tasks.pagination;
 export const selectTaskLoading = (state) => state.tasks.loading;
 export const selectTaskError = (state) => state.tasks.error;
 
-// Selector: Get tasks by status
-// Maps API statuses to Kanban board statuses:
-// - pending → todo
-// - in_progress → in_progress
-// - completed → done
 export const selectTasksByStatus = (kanbanStatus) => (state) => {
-    // Map Kanban status to API status
     const statusMap = {
         'todo': 'pending',
         'in_progress': 'in_progress',
@@ -383,5 +327,4 @@ export const selectTasksByStatus = (kanbanStatus) => (state) => {
     });
 };
 
-// Export reducer
 export default taskSlice.reducer;

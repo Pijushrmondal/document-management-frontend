@@ -1,5 +1,3 @@
-// src/components/documents/DocumentCard.jsx
-
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import {
@@ -47,7 +45,6 @@ function DocumentCard({ document }) {
   return (
     <>
       <div className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-4">
-        {/* File Icon */}
         <div className="flex items-center justify-center mb-3">
           <div
             className={`w-16 h-16 rounded-lg flex items-center justify-center text-3xl ${getFileTypeColor(
@@ -58,7 +55,6 @@ function DocumentCard({ document }) {
           </div>
         </div>
 
-        {/* File Name */}
         <h3
           className="text-sm font-medium text-gray-900 truncate mb-2"
           title={document.filename}
@@ -66,7 +62,6 @@ function DocumentCard({ document }) {
           {document.filename}
         </h3>
 
-        {/* File Info */}
         <div className="space-y-1 mb-3">
           <p className="text-xs text-gray-500">
             {formatFileSize(document.fileSize || document.size)}
@@ -76,16 +71,13 @@ function DocumentCard({ document }) {
           </p>
         </div>
 
-        {/* Tags */}
         <div className="flex flex-wrap gap-1 mb-3">
-          {/* Primary Tag */}
           {document.primaryTag && (
             <Badge variant="primary" size="sm">
               📁 {document.primaryTag}
             </Badge>
           )}
 
-          {/* Secondary Tags (max 2 shown) */}
           {document.secondaryTags?.slice(0, 2).map((tag, index) => (
             <Badge key={index} variant="default" size="sm">
               {tag}
@@ -99,7 +91,6 @@ function DocumentCard({ document }) {
           )}
         </div>
 
-        {/* Actions */}
         <div className="flex gap-2">
           <button
             onClick={handleDownload}
@@ -118,7 +109,6 @@ function DocumentCard({ document }) {
         </div>
       </div>
 
-      {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         isOpen={showDeleteDialog}
         onClose={() => setShowDeleteDialog(false)}
@@ -134,13 +124,3 @@ function DocumentCard({ document }) {
 }
 
 export default DocumentCard;
-
-
-
-
-
-
-
-
-
-

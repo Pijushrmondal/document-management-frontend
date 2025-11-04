@@ -1,5 +1,3 @@
-// src/components/documents/DocumentGrid.jsx
-
 import EmptyState from "../common/EmptyState";
 import LoadingSpinner from "../common/LoadingSpinner";
 import DocumentCard from "./DocumentCard";
@@ -13,7 +11,6 @@ function DocumentGrid({ documents, loading }) {
     );
   }
 
-  // Safety check: ensure documents is an array
   const docArray = Array.isArray(documents) ? documents : [];
 
   if (docArray.length === 0) {

@@ -1,5 +1,3 @@
-// src/pages/TaskDetails.jsx
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -38,7 +36,6 @@ function TaskDetails() {
   const handleDelete = async () => {
     setDeleteLoading(true);
     try {
-      // Use task.id or task._id as fallback
       const taskId = task.id || task._id;
       if (!taskId) {
         console.error("Task ID not found");
@@ -48,7 +45,6 @@ function TaskDetails() {
       await dispatch(deleteTask(taskId)).unwrap();
       navigate("/tasks");
     } catch (error) {
-      // Error is already shown via toast in the thunk/errorMiddleware
       console.error("Delete failed:", error);
       setDeleteLoading(false);
     }
@@ -111,7 +107,6 @@ function TaskDetails() {
   return (
     <>
       <div className="space-y-6">
-        {/* Header */}
         <div className="flex items-center justify-between">
           <Button variant="outline" onClick={() => navigate("/tasks")}>
             ← Back
@@ -134,15 +129,12 @@ function TaskDetails() {
           </div>
         </div>
 
-        {/* Task Info */}
         <Card>
           <div className="space-y-6">
-            {/* Title */}
             <div>
               <h1 className="text-2xl font-bold text-gray-900">{task.title}</h1>
             </div>
 
-            {/* Badges */}
             <div className="flex flex-wrap gap-2">
               <Badge variant={getStatusVariant(task.status)} size="lg">
                 {TASK_STATUSES[task.status]?.label || task.status}
@@ -157,7 +149,6 @@ function TaskDetails() {
               )}
             </div>
 
-            {/* Description */}
             {task.description && (
               <div>
                 <h3 className="text-sm font-medium text-gray-700 mb-2">
@@ -169,7 +160,6 @@ function TaskDetails() {
               </div>
             )}
 
-            {/* Details Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-gray-500">Due Date</p>
@@ -203,7 +193,6 @@ function TaskDetails() {
           </div>
         </Card>
 
-        {/* Task ID Card */}
         <Card title="Task Information">
           <dl className="grid grid-cols-1 gap-4">
             <div>
@@ -216,7 +205,6 @@ function TaskDetails() {
         </Card>
       </div>
 
-      {/* Edit Modal */}
       <CreateTaskModal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
@@ -226,7 +214,6 @@ function TaskDetails() {
         existingTask={task}
       />
 
-      {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         isOpen={showDeleteDialog}
         onClose={() => setShowDeleteDialog(false)}

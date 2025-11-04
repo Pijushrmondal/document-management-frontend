@@ -1,5 +1,3 @@
-// src/components/tasks/TaskCard.jsx
-
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { deleteTask } from "../../store/slices/taskSlice";
@@ -14,13 +12,11 @@ function TaskCard({ task, onEdit, onView, isDragging = false }) {
   const [loading, setLoading] = useState(false);
 
   const handleDelete = async (e) => {
-    // Stop propagation if called from click event
     if (e && e.stopPropagation) {
       e.stopPropagation();
     }
     setLoading(true);
     try {
-      // Use task.id or task._id as fallback
       const taskId = task.id || task._id;
       if (!taskId) {
         console.error("Task ID not found");
@@ -29,8 +25,6 @@ function TaskCard({ task, onEdit, onView, isDragging = false }) {
       await dispatch(deleteTask(taskId)).unwrap();
       setShowDeleteDialog(false);
     } catch (error) {
-      // Error is already shown via toast in the thunk/errorMiddleware
-      // Keep dialog open so user can see the error and try again if needed
       console.error("Delete failed:", error);
     } finally {
       setLoading(false);
@@ -81,7 +75,6 @@ function TaskCard({ task, onEdit, onView, isDragging = false }) {
             : "border-gray-300"
         }`}
       >
-        {/* Header */}
         <div className="flex items-start justify-between mb-3">
           <h4 className="text-sm font-semibold text-gray-900 flex-1 line-clamp-2">
             {task.title}
@@ -104,14 +97,12 @@ function TaskCard({ task, onEdit, onView, isDragging = false }) {
           </div>
         </div>
 
-        {/* Description */}
         {task.description && (
           <p className="text-xs text-gray-600 mb-3 line-clamp-2">
             {task.description}
           </p>
         )}
 
-        {/* Tags */}
         <div className="flex flex-wrap gap-1 mb-3">
           <Badge variant={getPriorityVariant(task.priority)} size="sm">
             {TASK_PRIORITIES[task.priority]?.label || task.priority}
@@ -123,7 +114,6 @@ function TaskCard({ task, onEdit, onView, isDragging = false }) {
           )}
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-between text-xs text-gray-500">
           {task.dueDate ? (
             <span className={isOverdue ? "text-red-600 font-medium" : ""}>
@@ -138,7 +128,6 @@ function TaskCard({ task, onEdit, onView, isDragging = false }) {
         </div>
       </div>
 
-      {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         isOpen={showDeleteDialog}
         onClose={() => setShowDeleteDialog(false)}

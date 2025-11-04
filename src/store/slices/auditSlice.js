@@ -1,11 +1,6 @@
-// src/store/slices/auditSlice.js
-
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import auditService from '../../services/auditService';
 
-/**
- * Initial state
- */
 const initialState = {
     logs: [],
     currentLog: null,
@@ -27,9 +22,6 @@ const initialState = {
     error: null,
 };
 
-/**
- * Async thunk: Fetch audit logs
- */
 export const fetchAuditLogs = createAsyncThunk(
     'audit/fetchAll',
     async (params = {}, { rejectWithValue }) => {
@@ -42,9 +34,6 @@ export const fetchAuditLogs = createAsyncThunk(
     }
 );
 
-/**
- * Async thunk: Fetch audit log by ID
- */
 export const fetchAuditLogById = createAsyncThunk(
     'audit/fetchById',
     async (id, { rejectWithValue }) => {
@@ -57,9 +46,6 @@ export const fetchAuditLogById = createAsyncThunk(
     }
 );
 
-/**
- * Async thunk: Fetch my audit logs
- */
 export const fetchMyAuditLogs = createAsyncThunk(
     'audit/fetchMyLogs',
     async (params = {}, { rejectWithValue }) => {
@@ -72,16 +58,12 @@ export const fetchMyAuditLogs = createAsyncThunk(
     }
 );
 
-/**
- * Async thunk: Export audit logs
- */
 export const exportAuditLogs = createAsyncThunk(
     'audit/export',
     async (filters = {}, { rejectWithValue }) => {
         try {
             const response = await auditService.exportLogs(filters);
 
-            // Create download link
             const url = window.URL.createObjectURL(new Blob([response]));
             const link = document.createElement('a');
             link.href = url;
@@ -98,9 +80,6 @@ export const exportAuditLogs = createAsyncThunk(
     }
 );
 
-/**
- * Async thunk: Fetch audit statistics
- */
 export const fetchAuditStats = createAsyncThunk(
     'audit/fetchStats',
     async (_, { rejectWithValue }) => {
@@ -113,19 +92,14 @@ export const fetchAuditStats = createAsyncThunk(
     }
 );
 
-/**
- * Audit slice
- */
 const auditSlice = createSlice({
     name: 'audit',
     initialState,
     reducers: {
-        // Set filters
         setFilters: (state, action) => {
             state.filters = { ...state.filters, ...action.payload };
         },
 
-        // Clear filters
         clearFilters: (state) => {
             state.filters = {
                 userId: '',
@@ -134,18 +108,15 @@ const auditSlice = createSlice({
             };
         },
 
-        // Clear current log
         clearCurrentLog: (state) => {
             state.currentLog = null;
         },
 
-        // Clear error
         clearError: (state) => {
             state.error = null;
         },
     },
     extraReducers: (builder) => {
-        // Fetch audit logs
         builder
             .addCase(fetchAuditLogs.pending, (state) => {
                 state.loading = true;
@@ -153,7 +124,6 @@ const auditSlice = createSlice({
             })
             .addCase(fetchAuditLogs.fulfilled, (state, action) => {
                 state.loading = false;
-                // Handle new API response structure: { logs: [...], total, page, totalPages }
                 const logsArray = action.payload.logs ||
                     action.payload.docs ||
                     (Array.isArray(action.payload) ? action.payload : []);
@@ -170,7 +140,6 @@ const auditSlice = createSlice({
                 state.error = action.payload;
             });
 
-        // Fetch audit log by ID
         builder
             .addCase(fetchAuditLogById.pending, (state) => {
                 state.loading = true;
@@ -185,7 +154,6 @@ const auditSlice = createSlice({
                 state.error = action.payload;
             });
 
-        // Fetch my audit logs
         builder
             .addCase(fetchMyAuditLogs.pending, (state) => {
                 state.loading = true;
@@ -193,12 +161,10 @@ const auditSlice = createSlice({
             })
             .addCase(fetchMyAuditLogs.fulfilled, (state, action) => {
                 state.loading = false;
-                // Handle new API response structure: { logs: [...], total, page, totalPages }
                 const logsArray = action.payload.logs ||
                     action.payload.docs ||
                     (Array.isArray(action.payload) ? action.payload : []);
                 state.myLogs = logsArray;
-                // Update pagination for my logs too
                 state.pagination = {
                     page: action.payload.page || 1,
                     limit: action.payload.limit || state.pagination.limit || 15,
@@ -211,7 +177,6 @@ const auditSlice = createSlice({
                 state.error = action.payload;
             });
 
-        // Export audit logs
         builder
             .addCase(exportAuditLogs.pending, (state) => {
                 state.exporting = true;
@@ -224,7 +189,6 @@ const auditSlice = createSlice({
                 state.error = action.payload;
             });
 
-        // Fetch audit stats
         builder
             .addCase(fetchAuditStats.pending, (state) => {
                 state.loading = true;

@@ -1,5 +1,3 @@
-// src/components/common/ConfirmDialog.jsx
-
 import Modal from "./Modal";
 import Button from "./Button";
 
@@ -16,13 +14,9 @@ function ConfirmDialog({
 }) {
   const handleConfirm = async () => {
     try {
-    await onConfirm();
-      // Only close if onConfirm doesn't throw an error
-      // Parent component should handle closing on success
-    onClose();
+      await onConfirm();
+      onClose();
     } catch (error) {
-      // Don't close dialog on error - let parent handle it
-      // Error is likely already handled by the parent component
     }
   };
 

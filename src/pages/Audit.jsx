@@ -1,5 +1,3 @@
-// src/pages/Audit.jsx
-
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -37,7 +35,6 @@ function Audit() {
   const [showFilters, setShowFilters] = useState(true);
 
   const isAdmin = user?.role === USER_ROLES.ADMIN;
-  // Use admin logs or user's own logs based on role
   const logs = isAdmin ? allLogs : myLogs;
 
   useEffect(() => {
@@ -45,13 +42,11 @@ function Audit() {
   }, []);
 
   const loadLogs = (page) => {
-    // Build params with proper mapping
     const params = {
       page,
       limit: pagination.limit,
     };
     
-    // Map date filters to from/to format
     if (filters.startDate) {
       params.from = filters.startDate;
     }
@@ -59,7 +54,6 @@ function Audit() {
       params.to = filters.endDate;
     }
     
-    // Fetch all logs for admin (with userId filter if provided), or user's own logs for regular users
     if (isAdmin) {
       if (filters.userId) {
         params.userId = filters.userId;
@@ -89,7 +83,6 @@ function Audit() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Audit Logs</h1>
@@ -116,13 +109,10 @@ function Audit() {
         </div>
       </div>
 
-      {/* Stats */}
       {isAdmin && <AuditStats />}
 
-      {/* Filters */}
       {showFilters && <AuditFilters onApply={handleApplyFilters} />}
 
-      {/* Stats Card */}
       <Card>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-8">
@@ -148,7 +138,6 @@ function Audit() {
         </div>
       </Card>
 
-      {/* Audit Logs Table */}
       <div>
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           Activity Logs
@@ -156,7 +145,6 @@ function Audit() {
         <AuditLogTable logs={logs} loading={loading} />
       </div>
 
-      {/* Pagination */}
       {!loading && pagination.totalPages > 0 && (
         <Pagination
           currentPage={pagination.page}

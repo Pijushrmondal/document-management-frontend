@@ -1,5 +1,3 @@
-// src/pages/Actions.jsx
-
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -29,7 +27,6 @@ function Actions() {
 
   useEffect(() => {
     dispatch(fetchActions({ page: 1, limit: 20 }));
-    // Fetch monthly usage for Total Actions count
     const now = new Date();
     dispatch(
       fetchMonthlyUsage({
@@ -46,7 +43,6 @@ function Actions() {
   const handleActionSuccess = () => {
     setShowRunner(false);
     dispatch(fetchActions({ page: 1, limit: pagination.limit }));
-    // Refresh usage stats after running action
     const now = new Date();
     dispatch(
       fetchMonthlyUsage({
@@ -59,7 +55,6 @@ function Actions() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">AI Actions</h1>
@@ -76,13 +71,10 @@ function Actions() {
         </Button>
       </div>
 
-      {/* Usage Stats */}
       <UsageStats />
 
-      {/* Action Runner */}
       {showRunner && <ActionRunner onSuccess={handleActionSuccess} />}
 
-      {/* Stats Card */}
       <Card>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-8">
@@ -113,7 +105,6 @@ function Actions() {
         </div>
       </Card>
 
-      {/* Action History */}
       <div>
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           Action History
@@ -121,7 +112,6 @@ function Actions() {
         <ActionHistory actions={actions} loading={loading} />
       </div>
 
-      {/* Pagination */}
       {!loading && actions.length > 0 && pagination.totalPages > 1 && (
         <Pagination
           currentPage={pagination.page}

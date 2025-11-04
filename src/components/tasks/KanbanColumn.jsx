@@ -1,5 +1,3 @@
-// src/components/tasks/KanbanColumn.jsx
-
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { updateTask, moveTask } from "../../store/slices/taskSlice";
@@ -40,8 +38,6 @@ function KanbanColumn({ status, tasks, onTaskEdit, onTaskView }) {
     const taskId = e.dataTransfer.getData("taskId");
     const currentStatus = e.dataTransfer.getData("currentStatus");
 
-    // Map Kanban status to API status
-    // todo → pending, in_progress → in_progress, done → completed
     const statusMap = {
       'todo': 'pending',
       'in_progress': 'in_progress',
@@ -50,13 +46,10 @@ function KanbanColumn({ status, tasks, onTaskEdit, onTaskView }) {
     
     const apiStatus = statusMap[status] || status;
 
-    // If dropped in same column, do nothing
     if (currentStatus === apiStatus) return;
 
-    // Optimistic update
     dispatch(moveTask({ taskId, newStatus: apiStatus }));
 
-    // API call using PATCH /tasks/:id with only status field
     try {
       await dispatch(updateTask({ 
         id: taskId, 
@@ -64,7 +57,6 @@ function KanbanColumn({ status, tasks, onTaskEdit, onTaskView }) {
       })).unwrap();
     } catch (error) {
       console.error("Failed to update task status:", error);
-      // Revert on error
       dispatch(moveTask({ taskId, newStatus: currentStatus }));
     }
   };
@@ -78,7 +70,6 @@ function KanbanColumn({ status, tasks, onTaskEdit, onTaskView }) {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      {/* Column Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
           <div
@@ -91,7 +82,6 @@ function KanbanColumn({ status, tasks, onTaskEdit, onTaskView }) {
         </div>
       </div>
 
-      {/* Tasks */}
       <div className="space-y-3 flex-1">
         {tasks.length === 0 ? (
           <div className="flex items-center justify-center h-32 text-sm text-gray-400">
