@@ -1,8 +1,10 @@
 // src/components/webhooks/WebhookCard.jsx
 
 import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { deleteWebhook } from "../../store/slices/webhookSlice";
+import { selectUser } from "../../store/slices/authSlice";
+import { Permissions } from "../../utils/permissions";
 import { useNavigate } from "react-router-dom";
 import Badge from "../common/Badge";
 import ConfirmDialog from "../common/ConfirmDialog";
@@ -11,8 +13,12 @@ import { WEBHOOK_EVENT_TYPE_LABELS } from "../../utils/constants";
 function WebhookCard({ webhook, onEdit, onTest }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const user = useSelector(selectUser);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Check permissions
+  const canWrite = user && Permissions.canWrite(user.role);
 
   const handleDelete = async (e) => {
     e.stopPropagation();
@@ -102,18 +108,22 @@ function WebhookCard({ webhook, onEdit, onTest }) {
           >
             🧪 Test
           </button>
-          <button
-            onClick={handleEditClick}
-            className="px-3 py-2 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 transition-colors"
-          >
-            ✏️
-          </button>
-          <button
-            onClick={handleDeleteClick}
-            className="px-3 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors"
-          >
-            🗑️
-          </button>
+          {canWrite && (
+            <>
+              <button
+                onClick={handleEditClick}
+                className="px-3 py-2 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 transition-colors"
+              >
+                ✏️
+              </button>
+              <button
+                onClick={handleDeleteClick}
+                className="px-3 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors"
+              >
+                🗑️
+              </button>
+            </>
+          )}
         </div>
       </div>
 

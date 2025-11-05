@@ -4,14 +4,52 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import authService from '../../services/authService';
 import apiService from '../../services/api';
 import { STORAGE_KEYS, SUCCESS_MESSAGES } from '../../utils/constants';
-import { saveToStorage, removeFromStorage, getFromStorage } from '../../utils/helpers';
+import { saveToStorage, removeFromStorage, getFromStorage, parseJWT } from '../../utils/helpers';
 import toast from 'react-hot-toast';
+
+/**
+ * Helper function to extract user from token
+ */
+const getUserFromToken = (token) => {
+    if (!token) return null;
+    const decoded = parseJWT(token);
+    if (decoded) {
+        return {
+            id: decoded.sub,
+            email: decoded.email,
+            role: decoded.role,
+        };
+    }
+    return null;
+};
 
 /**
  * Initial state
  */
+const getInitialUser = () => {
+    const storedUser = getFromStorage(STORAGE_KEYS.USER);
+    const storedToken = getFromStorage(STORAGE_KEYS.TOKEN);
+    
+    // If user exists, use it
+    if (storedUser && storedUser.role) {
+        return storedUser;
+    }
+    
+    // Otherwise, try to extract from token
+    if (storedToken) {
+        const userFromToken = getUserFromToken(storedToken);
+        if (userFromToken) {
+            // Save extracted user for future use
+            saveToStorage(STORAGE_KEYS.USER, userFromToken);
+            return userFromToken;
+        }
+    }
+    
+    return null;
+};
+
 const initialState = {
-    user: getFromStorage(STORAGE_KEYS.USER) || null,
+    user: getInitialUser(),
     token: getFromStorage(STORAGE_KEYS.TOKEN) || null,
     isAuthenticated: !!getFromStorage(STORAGE_KEYS.TOKEN),
     loading: false,
@@ -27,14 +65,40 @@ export const loginUser = createAsyncThunk(
         try {
             const response = await authService.login(email, role);
 
+            // Extract user info from JWT token if backend doesn't provide user object
+            let user = response.user;
+            if (!user && response.access_token) {
+                const decoded = parseJWT(response.access_token);
+                if (decoded) {
+                    // Create user object from JWT payload
+                    user = {
+                        id: decoded.sub,
+                        email: decoded.email || email,
+                        role: decoded.role || role,
+                    };
+                }
+            }
+
+            // If still no user, create from request params as fallback
+            if (!user) {
+                user = {
+                    id: 'temp_id',
+                    email: email,
+                    role: role,
+                };
+            }
+
             // Save token and user to localStorage
             saveToStorage(STORAGE_KEYS.TOKEN, response.access_token);
-            saveToStorage(STORAGE_KEYS.USER, response.user);
+            saveToStorage(STORAGE_KEYS.USER, user);
 
             // Set token in API service
             apiService.setAuthToken(response.access_token);
 
-            return response;
+            return {
+                ...response,
+                user: user,
+            };
         } catch (error) {
             return rejectWithValue(error.message || 'Login failed');
         }

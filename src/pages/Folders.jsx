@@ -7,10 +7,13 @@ import {
   selectFolders,
   selectTagLoading,
 } from "../store/slices/tagSlice";
+import { selectUser } from "../store/slices/authSlice";
+import { Permissions } from "../utils/permissions";
 import Card from "../components/common/Card";
 import Button from "../components/common/Button";
 import EmptyState from "../components/common/EmptyState";
 import LoadingSpinner from "../components/common/LoadingSpinner";
+import AdminUserSelector from "../components/common/AdminUserSelector";
 import FolderItem from "../components/tags/FolderItem";
 import CreateTagModal from "../components/tags/CreateTagModal";
 
@@ -18,12 +21,18 @@ function Folders() {
   const dispatch = useDispatch();
   const folders = useSelector(selectFolders);
   const loading = useSelector(selectTagLoading);
+  const user = useSelector(selectUser);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+
+  // Check permissions
+  const canWrite = user && Permissions.canWrite(user.role);
+  const isReadOnly = user && Permissions.isReadOnly(user.role);
 
   useEffect(() => {
-    dispatch(fetchFolders());
-  }, [dispatch]);
+    dispatch(fetchFolders(selectedUserId));
+  }, [dispatch, selectedUserId]);
 
   const handleCreateSuccess = () => {
     dispatch(fetchFolders());
@@ -44,14 +53,28 @@ function Folders() {
             Organize your documents with folders
           </p>
         </div>
-        <Button
-          variant="primary"
-          icon="➕"
-          onClick={() => setShowCreateModal(true)}
-        >
-          Create Folder
-        </Button>
+        <div className="flex gap-2">
+          {canWrite && (
+            <Button
+              variant="primary"
+              icon="➕"
+              onClick={() => setShowCreateModal(true)}
+            >
+              Create Folder
+            </Button>
+          )}
+          {isReadOnly && (
+            <div className="flex items-center px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <span className="text-sm text-yellow-800">
+                Read-only access
+              </span>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Admin User Selector */}
+      <AdminUserSelector onUserSelect={setSelectedUserId} />
 
       {/* Stats Card */}
       <Card>

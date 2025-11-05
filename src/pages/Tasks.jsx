@@ -9,6 +9,8 @@ import {
   fetchOverdueTasks,
   selectOverdueTasks,
 } from "../store/slices/taskSlice";
+import { selectUser } from "../store/slices/authSlice";
+import { Permissions } from "../utils/permissions";
 import Button from "../components/common/Button";
 import Alert from "../components/common/Alert";
 import KanbanBoard from "../components/tasks/KanbanBoard";
@@ -22,12 +24,17 @@ function Tasks() {
   const tasks = useSelector(selectTasks);
   const loading = useSelector(selectTaskLoading);
   const overdueTasks = useSelector(selectOverdueTasks);
+  const user = useSelector(selectUser);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [editingTask, setEditingTask] = useState(null);
   const [showTodaysTasks, setShowTodaysTasks] = useState(true);
+
+  // Check permissions
+  const canWrite = user && Permissions.canWrite(user.role);
+  const isReadOnly = user && Permissions.isReadOnly(user.role);
 
   useEffect(() => {
     dispatch(fetchTasks({ page: 1, limit: 100 }));
@@ -78,13 +85,22 @@ function Tasks() {
           >
             {showTodaysTasks ? "Hide" : "Show"} Today's Tasks
           </Button>
-          <Button
-            variant="primary"
-            icon="➕"
-            onClick={() => setShowCreateModal(true)}
-          >
-            Create Task
-          </Button>
+          {canWrite && (
+            <Button
+              variant="primary"
+              icon="➕"
+              onClick={() => setShowCreateModal(true)}
+            >
+              Create Task
+            </Button>
+          )}
+          {isReadOnly && (
+            <div className="flex items-center px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <span className="text-sm text-yellow-800">
+                Read-only access
+              </span>
+            </div>
+          )}
         </div>
       </div>
 

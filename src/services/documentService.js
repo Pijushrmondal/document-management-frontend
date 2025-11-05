@@ -12,13 +12,21 @@ const documentService = {
      * Get all documents with pagination
      * @param {number} page - Page number
      * @param {number} limit - Items per page
+     * @param {string} userId - Optional user ID for admin queries
      * @returns {Promise} Documents list with pagination
      */
-    getAll: async (page = 1, limit = 20) => {
-        const response = await apiService.get(API_ENDPOINTS.DOCUMENTS, {
+    getAll: async (page = 1, limit = 20, userId = null) => {
+        const params = {
             page,
             limit,
-        });
+        };
+        
+        // Add userId for admin queries
+        if (userId) {
+            params.userId = userId;
+        }
+        
+        const response = await apiService.get(API_ENDPOINTS.DOCUMENTS, params);
         return response;
     },
 

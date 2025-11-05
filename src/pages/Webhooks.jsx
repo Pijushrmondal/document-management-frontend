@@ -9,6 +9,7 @@ import {
   selectWebhookLoading,
 } from "../store/slices/webhookSlice";
 import { selectUser } from "../store/slices/authSlice";
+import { Permissions } from "../utils/permissions";
 import Card from "../components/common/Card";
 import Button from "../components/common/Button";
 import Alert from "../components/common/Alert";
@@ -31,14 +32,15 @@ function Webhooks() {
   const [editingWebhook, setEditingWebhook] = useState(null);
   const [testingWebhook, setTestingWebhook] = useState(null);
 
-  // Check if user is admin
+  // Permission checks
+  const canWrite = user && Permissions.canWrite(user.role);
+  const isReadOnly = user && Permissions.isReadOnly(user.role);
   const isAdmin = user?.role === USER_ROLES.ADMIN;
 
   useEffect(() => {
-    if (isAdmin) {
-      dispatch(fetchWebhooks({ page: 1, limit: 20 }));
-    }
-  }, [dispatch, isAdmin]);
+    // All roles can view webhooks (according to backend)
+    dispatch(fetchWebhooks({ page: 1, limit: 20 }));
+  }, [dispatch]);
 
   const handlePageChange = (page) => {
     dispatch(fetchWebhooks({ page, limit: pagination.limit }));
@@ -68,27 +70,6 @@ function Webhooks() {
     setTestingWebhook(null);
   };
 
-  // Restrict access to admin only
-  if (!isAdmin) {
-    return (
-      <div className="space-y-6">
-        <div className="text-center py-12">
-          <div className="text-6xl mb-4">🔒</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Access Restricted
-          </h2>
-          <p className="text-gray-600 mb-6">
-            Only administrators can access webhook management.
-          </p>
-          <Alert type="warning" title="Admin Only">
-            Webhooks are powerful integrations that require administrative
-            privileges to configure.
-          </Alert>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -96,22 +77,36 @@ function Webhooks() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Webhooks</h1>
           <p className="mt-1 text-sm text-gray-600">
-            Configure webhook endpoints to receive event notifications
+            {isAdmin 
+              ? "Configure webhook endpoints to receive event notifications"
+              : "View webhook configurations and event history"}
           </p>
         </div>
-        <Button
-          variant="primary"
-          icon="➕"
-          onClick={() => setShowCreateModal(true)}
-        >
-          Create Webhook
-        </Button>
+        <div className="flex gap-2">
+          {canWrite && (
+            <Button
+              variant="primary"
+              icon="➕"
+              onClick={() => setShowCreateModal(true)}
+            >
+              Create Webhook
+            </Button>
+          )}
+          {isReadOnly && (
+            <div className="flex items-center px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <span className="text-sm text-yellow-800">
+                Read-only access
+              </span>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Admin Badge */}
-      <Alert type="info" title="Administrator Access">
-        You have full access to create, edit, and delete webhooks.
-      </Alert>
+      {isReadOnly && (
+        <Alert type="warning" title="Read-Only Access">
+          Your role ({user?.role}) has read-only access. You can view webhooks but cannot create or modify them.
+        </Alert>
+      )}
 
       {/* Webhook Stats */}
       <WebhookStats />

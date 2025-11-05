@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   downloadDocument,
   deleteDocument,
 } from "../../store/slices/documentSlice";
+import { selectUser } from "../../store/slices/authSlice";
+import { Permissions } from "../../utils/permissions";
 import { getFileIcon, getFileTypeColor } from "../../utils/fileHelpers";
 import { formatFileSize, formatRelativeTime } from "../../utils/formatters";
 import Badge from "../common/Badge";
@@ -11,8 +13,12 @@ import ConfirmDialog from "../common/ConfirmDialog";
 
 function DocumentCard({ document }) {
   const dispatch = useDispatch();
+  const user = useSelector(selectUser);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Check permissions
+  const canWrite = user && Permissions.canWrite(user.role);
 
   const handleDownload = async () => {
     setLoading(true);
@@ -99,13 +105,15 @@ function DocumentCard({ document }) {
           >
             {loading ? "⏳" : "📥"} Download
           </button>
-          <button
-            onClick={() => setShowDeleteDialog(true)}
-            disabled={loading}
-            className="px-3 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 disabled:opacity-50 transition-colors"
-          >
-            🗑️
-          </button>
+          {canWrite && (
+            <button
+              onClick={() => setShowDeleteDialog(true)}
+              disabled={loading}
+              className="px-3 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 disabled:opacity-50 transition-colors"
+            >
+              🗑️
+            </button>
+          )}
         </div>
       </div>
 

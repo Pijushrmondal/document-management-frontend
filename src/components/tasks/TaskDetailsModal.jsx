@@ -1,5 +1,8 @@
 // src/components/tasks/TaskDetailsModal.jsx
 
+import { useSelector } from "react-redux";
+import { selectUser } from "../../store/slices/authSlice";
+import { Permissions } from "../../utils/permissions";
 import Modal from "../common/Modal";
 import Button from "../common/Button";
 import Badge from "../common/Badge";
@@ -7,7 +10,12 @@ import { formatDate } from "../../utils/formatters";
 import { TASK_STATUSES, TASK_PRIORITIES } from "../../utils/constants";
 
 function TaskDetailsModal({ isOpen, onClose, task, onEdit }) {
+  const user = useSelector(selectUser);
+  
   if (!task) return null;
+
+  // Check permissions
+  const canWrite = user && Permissions.canWrite(user.role);
 
   const getStatusVariant = (status) => {
     switch (status) {
@@ -49,9 +57,11 @@ function TaskDetailsModal({ isOpen, onClose, task, onEdit }) {
           <Button variant="outline" onClick={onClose}>
             Close
           </Button>
-          <Button variant="primary" onClick={() => onEdit(task)}>
-            Edit Task
-          </Button>
+          {canWrite && onEdit && (
+            <Button variant="primary" onClick={() => onEdit(task)}>
+              Edit Task
+            </Button>
+          )}
         </>
       }
     >

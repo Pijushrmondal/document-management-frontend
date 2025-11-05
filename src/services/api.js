@@ -103,7 +103,13 @@ api.interceptors.response.use(
 
                 case 403:
                     // Forbidden - User doesn't have permission
-                    error.message = ERROR_MESSAGES.FORBIDDEN;
+                    const errorMessage = error.response.data?.message || ERROR_MESSAGES.FORBIDDEN;
+                    error.message = errorMessage;
+                    // Add additional context for read-only roles
+                    if (error.response.data?.readOnly) {
+                        error.readOnly = true;
+                        error.message = `Your role has read-only access. ${errorMessage}`;
+                    }
                     break;
 
                 case 404:

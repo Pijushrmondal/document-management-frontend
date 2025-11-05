@@ -9,8 +9,11 @@ import {
   selectActionLoading,
   selectActionUsage,
 } from "../store/slices/actionSlice";
+import { selectUser } from "../store/slices/authSlice";
+import { Permissions } from "../utils/permissions";
 import Card from "../components/common/Card";
 import Button from "../components/common/Button";
+import Alert from "../components/common/Alert";
 import Pagination from "../components/common/Pagination";
 import ActionRunner from "../components/actions/ActionRunner";
 import ActionHistory from "../components/actions/ActionHistory";
@@ -22,8 +25,13 @@ function Actions() {
   const pagination = useSelector(selectActionPagination);
   const loading = useSelector(selectActionLoading);
   const usage = useSelector(selectActionUsage);
+  const user = useSelector(selectUser);
 
   const [showRunner, setShowRunner] = useState(false);
+
+  // Check permissions
+  const canRunActions = user && Permissions.canRunActions(user.role);
+  const isReadOnly = user && Permissions.isReadOnly(user.role);
 
   useEffect(() => {
     dispatch(fetchActions({ page: 1, limit: 20 }));
@@ -62,14 +70,29 @@ function Actions() {
             Run AI-powered actions on your documents
           </p>
         </div>
-        <Button
-          variant="primary"
-          icon="🤖"
-          onClick={() => setShowRunner(!showRunner)}
-        >
-          {showRunner ? "Hide Runner" : "Run Action"}
-        </Button>
+        {canRunActions && (
+          <Button
+            variant="primary"
+            icon="🤖"
+            onClick={() => setShowRunner(!showRunner)}
+          >
+            {showRunner ? "Hide Runner" : "Run Action"}
+          </Button>
+        )}
+        {isReadOnly && (
+          <div className="flex items-center px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <span className="text-sm text-yellow-800">
+              Read-only access. Cannot run actions.
+            </span>
+          </div>
+        )}
       </div>
+
+      {isReadOnly && (
+        <Alert type="warning" title="Read-Only Access">
+          Your role ({user?.role}) has read-only access. You can view action history but cannot run new actions.
+        </Alert>
+      )}
 
       <UsageStats />
 

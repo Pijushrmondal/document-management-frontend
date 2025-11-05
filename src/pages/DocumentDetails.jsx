@@ -10,9 +10,12 @@ import {
   selectCurrentDocument,
   selectDocumentLoading,
 } from "../store/slices/documentSlice";
+import { selectUser } from "../store/slices/authSlice";
+import { Permissions } from "../utils/permissions";
 import Card from "../components/common/Card";
 import Button from "../components/common/Button";
 import Badge from "../components/common/Badge";
+import Alert from "../components/common/Alert";
 import LoadingSpinner from "../components/common/LoadingSpinner";
 import ConfirmDialog from "../components/common/ConfirmDialog";
 import { getFileIcon, getFileTypeColor } from "../utils/fileHelpers";
@@ -24,9 +27,14 @@ function DocumentDetails() {
   const dispatch = useDispatch();
   const document = useSelector(selectCurrentDocument);
   const loading = useSelector(selectDocumentLoading);
+  const user = useSelector(selectUser);
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Check permissions
+  const canWrite = user && Permissions.canWrite(user.role);
+  const isReadOnly = user && Permissions.isReadOnly(user.role);
 
   useEffect(() => {
     if (id) {
@@ -103,14 +111,23 @@ function DocumentDetails() {
             >
               Download
             </Button>
-            <Button
-              variant="danger"
-              icon="🗑️"
-              onClick={() => setShowDeleteDialog(true)}
-              loading={actionLoading}
-            >
-              Delete
-            </Button>
+            {canWrite && (
+              <Button
+                variant="danger"
+                icon="🗑️"
+                onClick={() => setShowDeleteDialog(true)}
+                loading={actionLoading}
+              >
+                Delete
+              </Button>
+            )}
+            {isReadOnly && (
+              <div className="flex items-center px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <span className="text-sm text-yellow-800">
+                  Read-only access
+                </span>
+              </div>
+            )}
           </div>
         </div>
 

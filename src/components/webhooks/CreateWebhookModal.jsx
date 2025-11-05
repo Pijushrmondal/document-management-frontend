@@ -7,8 +7,11 @@ import {
   updateWebhook,
   selectWebhookLoading,
 } from "../../store/slices/webhookSlice";
+import { selectUser } from "../../store/slices/authSlice";
+import { Permissions } from "../../utils/permissions";
 import Modal from "../common/Modal";
 import Button from "../common/Button";
+import Alert from "../common/Alert";
 import EventTypeSelector from "./EventTypeSelector";
 import { validateWebhookData } from "../../utils/validators";
 import { isValidUrl } from "../../utils/validators";
@@ -20,9 +23,14 @@ function CreateWebhookModal({
   existingWebhook = null,
 }) {
   const dispatch = useDispatch();
+  const user = useSelector(selectUser);
   const loading = useSelector(selectWebhookLoading);
 
   const isEditing = !!existingWebhook;
+
+  // Check permissions
+  const canWrite = user && Permissions.canWrite(user.role);
+  const isReadOnly = user && Permissions.isReadOnly(user.role);
 
   const [formData, setFormData] = useState({
     url: existingWebhook?.url || "",
@@ -109,13 +117,25 @@ function CreateWebhookModal({
           <Button variant="outline" onClick={handleClose} disabled={loading}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleSubmit} loading={loading}>
+          <Button 
+            variant="primary" 
+            onClick={handleSubmit} 
+            loading={loading}
+            disabled={!canWrite || isReadOnly}
+          >
             {isEditing ? "Update" : "Create"}
           </Button>
         </>
       }
     >
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Read-only warning */}
+        {isReadOnly && (
+          <Alert type="warning" title="Read-Only Access">
+            Your role ({user?.role}) has read-only access. You cannot create or edit webhooks.
+          </Alert>
+        )}
+
         {/* Webhook URL */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">

@@ -49,10 +49,15 @@ const tagService = {
 
     /**
      * Get all folders (tags used as primary tags)
+     * @param {string} userId - Optional user ID for admin queries
      * @returns {Promise} Folders list with document counts
      */
-    getFolders: async () => {
-        const response = await apiService.get(API_ENDPOINTS.FOLDERS);
+    getFolders: async (userId = null) => {
+        const params = {};
+        if (userId) {
+            params.userId = userId;
+        }
+        const response = await apiService.get(API_ENDPOINTS.FOLDERS, params);
         return response;
     },
 

@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { selectUser } from "../store/slices/authSlice";
+import { Permissions } from "../utils/permissions";
 import { fetchDocuments, selectDocuments } from "../store/slices/documentSlice";
 import { fetchTodaysTasks, selectTodaysTasks } from "../store/slices/taskSlice";
 import { fetchMyMetrics, selectMyMetrics } from "../store/slices/metricsSlice";
@@ -20,6 +21,12 @@ function Dashboard() {
   const documents = useSelector(selectDocuments);
   const todaysTasks = useSelector(selectTodaysTasks);
   const myMetrics = useSelector(selectMyMetrics);
+
+  // Permission checks
+  const canWrite = user && Permissions.canWrite(user.role);
+  const canRunActions = user && Permissions.canRunActions(user.role);
+  const isReadOnly = user && Permissions.isReadOnly(user.role);
+  const isAdmin = user?.role === USER_ROLES.ADMIN;
 
   useEffect(() => {
     // Fetch dashboard data
@@ -88,37 +95,47 @@ function Dashboard() {
       {/* Quick Actions */}
       <Card title="Quick Actions" subtitle="Get started with common tasks">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <button
-            onClick={() => navigate("/documents")}
-            className="p-6 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all group"
-          >
-            <div className="text-4xl mb-3">📤</div>
-            <h3 className="font-semibold text-gray-900 mb-1">
-              Upload Document
-            </h3>
-            <p className="text-xs text-gray-600">
-              Add new files to your library
-            </p>
-          </button>
+          {/* Upload Document - Only for users who can write */}
+          {canWrite && (
+            <button
+              onClick={() => navigate("/documents")}
+              className="p-6 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all group"
+            >
+              <div className="text-4xl mb-3">📤</div>
+              <h3 className="font-semibold text-gray-900 mb-1">
+                Upload Document
+              </h3>
+              <p className="text-xs text-gray-600">
+                Add new files to your library
+              </p>
+            </button>
+          )}
 
-          <button
-            onClick={() => navigate("/actions")}
-            className="p-6 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all group"
-          >
-            <div className="text-4xl mb-3">🤖</div>
-            <h3 className="font-semibold text-gray-900 mb-1">Run AI Action</h3>
-            <p className="text-xs text-gray-600">Process documents with AI</p>
-          </button>
+          {/* Run AI Action - Only for users who can run actions */}
+          {canRunActions && (
+            <button
+              onClick={() => navigate("/actions")}
+              className="p-6 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all group"
+            >
+              <div className="text-4xl mb-3">🤖</div>
+              <h3 className="font-semibold text-gray-900 mb-1">Run AI Action</h3>
+              <p className="text-xs text-gray-600">Process documents with AI</p>
+            </button>
+          )}
 
-          <button
-            onClick={() => navigate("/tasks")}
-            className="p-6 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all group"
-          >
-            <div className="text-4xl mb-3">📋</div>
-            <h3 className="font-semibold text-gray-900 mb-1">Create Task</h3>
-            <p className="text-xs text-gray-600">Add to your task board</p>
-          </button>
+          {/* Create Task - Only for users who can write */}
+          {canWrite && (
+            <button
+              onClick={() => navigate("/tasks")}
+              className="p-6 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all group"
+            >
+              <div className="text-4xl mb-3">📋</div>
+              <h3 className="font-semibold text-gray-900 mb-1">Create Task</h3>
+              <p className="text-xs text-gray-600">Add to your task board</p>
+            </button>
+          )}
 
+          {/* Manage Folders - Always visible */}
           <button
             onClick={() => navigate("/folders")}
             className="p-6 border-2 border-gray-200 rounded-lg hover:border-yellow-500 hover:bg-yellow-50 transition-all group"
@@ -127,6 +144,17 @@ function Dashboard() {
             <h3 className="font-semibold text-gray-900 mb-1">Manage Folders</h3>
             <p className="text-xs text-gray-600">Organize your documents</p>
           </button>
+
+          {/* Read-only indicator */}
+          {isReadOnly && (
+            <div className="p-6 border-2 border-yellow-200 bg-yellow-50 rounded-lg flex flex-col items-center justify-center">
+              <div className="text-4xl mb-3">🔒</div>
+              <h3 className="font-semibold text-gray-900 mb-1">Read-Only Access</h3>
+              <p className="text-xs text-gray-600 text-center">
+                Your role has read-only permissions
+              </p>
+            </div>
+          )}
         </div>
       </Card>
 

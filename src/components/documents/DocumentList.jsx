@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   downloadDocument,
   deleteDocument,
 } from "../../store/slices/documentSlice";
+import { selectUser } from "../../store/slices/authSlice";
+import { Permissions } from "../../utils/permissions";
 import { getFileIcon, getFileTypeColor } from "../../utils/fileHelpers";
 import { formatFileSize, formatDate } from "../../utils/formatters";
 import Badge from "../common/Badge";
@@ -13,8 +15,12 @@ import ConfirmDialog from "../common/ConfirmDialog";
 
 function DocumentList({ documents, loading }) {
   const dispatch = useDispatch();
+  const user = useSelector(selectUser);
   const [deleteDocId, setDeleteDocId] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Check permissions
+  const canWrite = user && Permissions.canWrite(user.role);
 
   const handleDownload = async (doc) => {
     setActionLoading(true);
@@ -149,13 +155,15 @@ function DocumentList({ documents, loading }) {
                   >
                     📥 Download
                   </button>
-                  <button
-                    onClick={() => setDeleteDocId(doc.id)}
-                    disabled={actionLoading}
-                    className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                  >
-                    🗑️ Delete
-                  </button>
+                  {canWrite && (
+                    <button
+                      onClick={() => setDeleteDocId(doc.id)}
+                      disabled={actionLoading}
+                      className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                    >
+                      🗑️ Delete
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

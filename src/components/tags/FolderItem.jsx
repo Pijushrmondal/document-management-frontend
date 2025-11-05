@@ -1,15 +1,21 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { deleteTag, fetchFolders } from "../../store/slices/tagSlice";
+import { selectUser } from "../../store/slices/authSlice";
+import { Permissions } from "../../utils/permissions";
 import Badge from "../common/Badge";
 import ConfirmDialog from "../common/ConfirmDialog";
 
 function FolderItem({ folder, showActions = true }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const user = useSelector(selectUser);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Check permissions
+  const canWrite = user && Permissions.canWrite(user.role);
 
   const handleClick = () => {
     navigate(`/folders/${folder.name}`);
@@ -59,7 +65,7 @@ function FolderItem({ folder, showActions = true }) {
             </div>
           </div>
 
-          {showActions && (
+          {showActions && canWrite && (
             <div className="flex items-center space-x-2">
               <button
                 onClick={handleDeleteClick}

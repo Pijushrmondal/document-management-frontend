@@ -13,6 +13,8 @@ import {
   setViewMode,
   clearSearchResults,
 } from "../store/slices/documentSlice";
+import { selectUser } from "../store/slices/authSlice";
+import { Permissions } from "../utils/permissions";
 import Card from "../components/common/Card";
 import Button from "../components/common/Button";
 import Alert from "../components/common/Alert";
@@ -21,6 +23,7 @@ import DocumentGrid from "../components/documents/DocumentGrid";
 import DocumentList from "../components/documents/DocumentList";
 import DocumentUpload from "../components/documents/DocumentUpload";
 import DocumentSearch from "../components/documents/DocumentSearch";
+import AdminUserSelector from "../components/common/AdminUserSelector";
 
 function Documents() {
   const dispatch = useDispatch();
@@ -30,18 +33,24 @@ function Documents() {
   const loading = useSelector(selectDocumentLoading);
   const searching = useSelector(selectSearching);
   const viewMode = useSelector(selectViewMode);
+  const user = useSelector(selectUser);
 
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [isSearchMode, setIsSearchMode] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState(null);
 
-  // Fetch documents on mount
+  // Check permissions
+  const canWrite = user && Permissions.canWrite(user.role);
+  const isReadOnly = user && Permissions.isReadOnly(user.role);
+
+  // Fetch documents on mount or when userId changes
   useEffect(() => {
-    dispatch(fetchDocuments({ page: 1, limit: 20 }));
-  }, [dispatch]);
+    dispatch(fetchDocuments({ page: 1, limit: 20, userId: selectedUserId }));
+  }, [dispatch, selectedUserId]);
 
   const handlePageChange = (page) => {
-    dispatch(fetchDocuments({ page, limit: pagination.limit }));
+    dispatch(fetchDocuments({ page, limit: pagination.limit, userId: selectedUserId }));
   };
 
   const handleViewModeChange = (mode) => {
@@ -96,15 +105,27 @@ function Documents() {
           >
             Search
           </Button>
-          <Button
-            variant="primary"
-            icon="📤"
-            onClick={() => setShowUploadModal(true)}
-          >
-            Upload
-          </Button>
+          {canWrite && (
+            <Button
+              variant="primary"
+              icon="📤"
+              onClick={() => setShowUploadModal(true)}
+            >
+              Upload
+            </Button>
+          )}
+          {isReadOnly && (
+            <div className="flex items-center px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <span className="text-sm text-yellow-800">
+                Read-only access
+              </span>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Admin User Selector */}
+      <AdminUserSelector onUserSelect={setSelectedUserId} />
 
       {/* Search Section */}
       {showSearch && <DocumentSearch onSearch={handleSearch} />}

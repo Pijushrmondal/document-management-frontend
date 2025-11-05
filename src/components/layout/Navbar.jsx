@@ -4,8 +4,9 @@ import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { selectUser, logoutUser } from "../../store/slices/authSlice";
 import { toggleSidebar } from "../../store/slices/uiSlice";
-import { ROLE_LABELS } from "../../utils/constants";
+import { ROLE_LABELS, USER_ROLES } from "../../utils/constants";
 import { formatInitials } from "../../utils/formatters";
+import { Permissions } from "../../utils/permissions";
 import Breadcrumbs from "./Breadcrumbs";
 
 function Navbar() {
@@ -67,11 +68,32 @@ function Navbar() {
 
               {/* User details */}
               <div className="hidden md:block">
-                <div className="text-sm font-medium text-gray-700">
-                  {user?.name || user?.email?.split("@")[0]}
-                </div>
-                <div className="text-xs text-gray-500">
-                  {ROLE_LABELS[user?.role] || "User"}
+                <div className="flex items-center gap-2">
+                  <div className="text-sm font-medium text-gray-700">
+                    {user?.name || user?.email?.split("@")[0]}
+                  </div>
+                  {/* Role Badge */}
+                  {user?.role && (
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                        user.role === USER_ROLES.ADMIN
+                          ? "bg-red-100 text-red-800"
+                          : user.role === USER_ROLES.SUPPORT
+                          ? "bg-blue-100 text-blue-800"
+                          : user.role === USER_ROLES.MODERATOR
+                          ? "bg-purple-100 text-purple-800"
+                          : "bg-green-100 text-green-800"
+                      }`}
+                    >
+                      {ROLE_LABELS[user.role] || user.role}
+                    </span>
+                  )}
+                  {/* Read-Only Indicator */}
+                  {user?.role && Permissions.isReadOnly(user.role) && (
+                    <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-yellow-100 text-yellow-800">
+                      Read-Only
+                    </span>
+                  )}
                 </div>
               </div>
 

@@ -7,8 +7,11 @@ import {
   selectDocumentUploading,
   selectUploadProgress,
 } from "../../store/slices/documentSlice";
+import { selectUser } from "../../store/slices/authSlice";
+import { Permissions } from "../../utils/permissions";
 import Modal from "../common/Modal";
 import Button from "../common/Button";
+import Alert from "../common/Alert";
 import FileUploadZone from "./FileUploadZone";
 import { getFileIcon, getFileTypeColor } from "../../utils/fileHelpers";
 import { formatFileSize } from "../../utils/formatters";
@@ -16,6 +19,7 @@ import Badge from "../common/Badge";
 
 function DocumentUpload({ isOpen, onClose, onSuccess }) {
   const dispatch = useDispatch();
+  const user = useSelector(selectUser);
   const uploading = useSelector(selectDocumentUploading);
   const uploadProgress = useSelector(selectUploadProgress);
 
@@ -24,6 +28,11 @@ function DocumentUpload({ isOpen, onClose, onSuccess }) {
   const [secondaryTags, setSecondaryTags] = useState([]);
   const [tagInput, setTagInput] = useState("");
   const [errors, setErrors] = useState({});
+  const [apiError, setApiError] = useState(null);
+
+  // Check permissions
+  const canWrite = user && Permissions.canWrite(user.role);
+  const isReadOnly = user && Permissions.isReadOnly(user.role);
 
   const handleFileSelect = (file) => {
     setSelectedFile(file);
@@ -86,6 +95,12 @@ function DocumentUpload({ isOpen, onClose, onSuccess }) {
       onClose();
     } catch (error) {
       console.error("Upload failed:", error);
+      // Handle 403 Forbidden errors
+      if (error.message && (error.message.includes('403') || error.message.includes('permission') || error.message.includes('read-only'))) {
+        setApiError(error.message);
+      } else {
+        setApiError('Upload failed. Please try again.');
+      }
     }
   };
 
@@ -118,7 +133,7 @@ function DocumentUpload({ isOpen, onClose, onSuccess }) {
             variant="primary"
             onClick={handleSubmit}
             loading={uploading}
-            disabled={!selectedFile || !primaryTag}
+            disabled={!selectedFile || !primaryTag || !canWrite || isReadOnly}
           >
             Upload
           </Button>
@@ -126,6 +141,20 @@ function DocumentUpload({ isOpen, onClose, onSuccess }) {
       }
     >
       <div className="space-y-6">
+        {/* Read-only warning */}
+        {isReadOnly && (
+          <Alert type="warning" title="Read-Only Access">
+            Your role ({user?.role}) has read-only access. You cannot upload documents.
+          </Alert>
+        )}
+
+        {/* API Error */}
+        {apiError && (
+          <Alert type="error" title="Upload Failed">
+            {apiError}
+          </Alert>
+        )}
+
         {/* File Upload Zone */}
         {!selectedFile ? (
           <div>

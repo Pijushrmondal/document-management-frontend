@@ -1,12 +1,18 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { updateTask, moveTask } from "../../store/slices/taskSlice";
+import { selectUser } from "../../store/slices/authSlice";
+import { Permissions } from "../../utils/permissions";
 import TaskCard from "./TaskCard";
 import { TASK_STATUSES } from "../../utils/constants";
 
 function KanbanColumn({ status, tasks, onTaskEdit, onTaskView }) {
   const dispatch = useDispatch();
+  const user = useSelector(selectUser);
   const [isDragOver, setIsDragOver] = useState(false);
+
+  // Check permissions
+  const canWrite = user && Permissions.canWrite(user.role);
 
   const statusConfig = TASK_STATUSES[status] || {
     label: status,
@@ -34,6 +40,11 @@ function KanbanColumn({ status, tasks, onTaskEdit, onTaskView }) {
   const handleDrop = async (e) => {
     e.preventDefault();
     setIsDragOver(false);
+
+    // Check if user can write
+    if (!canWrite) {
+      return;
+    }
 
     const taskId = e.dataTransfer.getData("taskId");
     const currentStatus = e.dataTransfer.getData("currentStatus");
@@ -65,10 +76,10 @@ function KanbanColumn({ status, tasks, onTaskEdit, onTaskView }) {
     <div
       className={`bg-gray-50 rounded-lg p-4 min-h-[500px] flex flex-col transition-colors ${
         isDragOver ? "bg-blue-50 ring-2 ring-blue-400" : ""
-      }`}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
+      } ${!canWrite ? "opacity-75" : ""}`}
+      onDragOver={canWrite ? handleDragOver : undefined}
+      onDragLeave={canWrite ? handleDragLeave : undefined}
+      onDrop={canWrite ? handleDrop : undefined}
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
@@ -91,8 +102,8 @@ function KanbanColumn({ status, tasks, onTaskEdit, onTaskView }) {
           tasks.map((task) => (
             <div
               key={task.id}
-              draggable
-              onDragStart={(e) => handleDragStart(e, task)}
+              draggable={canWrite}
+              onDragStart={canWrite ? (e) => handleDragStart(e, task) : undefined}
             >
               <TaskCard task={task} onEdit={onTaskEdit} onView={onTaskView} />
             </div>

@@ -5,8 +5,11 @@ import {
   updateTask,
   selectTaskLoading,
 } from "../../store/slices/taskSlice";
+import { selectUser } from "../../store/slices/authSlice";
+import { Permissions } from "../../utils/permissions";
 import Modal from "../common/Modal";
 import Button from "../common/Button";
+import Alert from "../common/Alert";
 import { validateTaskData } from "../../utils/validators";
 import {
   TASK_TYPES,
@@ -19,9 +22,14 @@ import {
 
 function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
   const dispatch = useDispatch();
+  const user = useSelector(selectUser);
   const loading = useSelector(selectTaskLoading);
 
   const isEditing = !!existingTask;
+
+  // Check permissions
+  const canWrite = user && Permissions.canWrite(user.role);
+  const isReadOnly = user && Permissions.isReadOnly(user.role);
 
   const [formData, setFormData] = useState({
     source: "",
@@ -228,13 +236,25 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
           <Button variant="outline" onClick={handleClose} disabled={loading}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleSubmit} loading={loading}>
+          <Button 
+            variant="primary" 
+            onClick={handleSubmit} 
+            loading={loading}
+            disabled={!canWrite || isReadOnly}
+          >
             {isEditing ? "Update" : "Create"}
           </Button>
         </>
       }
     >
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Read-only warning */}
+        {isReadOnly && (
+          <Alert type="warning" title="Read-Only Access">
+            Your role ({user?.role}) has read-only access. You cannot create or edit tasks.
+          </Alert>
+        )}
+
         {isEditing ? (
           <>
             <div>
@@ -244,8 +264,8 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
               <select
                 value={formData.status}
                 onChange={(e) => handleChange("status", e.target.value)}
-                disabled={loading}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={loading || !canWrite || isReadOnly}
+                className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
               >
                 {Object.entries(TASK_STATUS_LABELS).map(([key, label]) => (
                   <option key={key} value={key}>
@@ -264,8 +284,8 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
                 onChange={(e) => handleChange("description", e.target.value)}
                 placeholder="Enter notes (optional)"
                 rows={3}
-                disabled={loading}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                disabled={loading || !canWrite || isReadOnly}
+                className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
               />
             </div>
 
@@ -290,14 +310,14 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Source
                 </label>
-                <input
-                  type="text"
-                  value={formData.source}
-                  onChange={(e) => handleChange("source", e.target.value)}
-                  placeholder="e.g., scanner-01 (optional)"
-                  disabled={loading}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                  <input
+                    type="text"
+                    value={formData.source}
+                    onChange={(e) => handleChange("source", e.target.value)}
+                    placeholder="e.g., scanner-01 (optional)"
+                    disabled={loading || !canWrite || isReadOnly}
+                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                  />
               </div>
 
               <div>
@@ -307,8 +327,8 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
                 <select
                   value={formData.type}
                   onChange={(e) => handleChange("type", e.target.value)}
-                  disabled={loading}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={loading || !canWrite || isReadOnly}
+                  className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                 >
                   {Object.entries(TASK_TYPE_LABELS).map(([key, label]) => (
                     <option key={key} value={key}>
@@ -327,8 +347,8 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
                 <select
                   value={formData.channel}
                   onChange={(e) => handleChange("channel", e.target.value)}
-                  disabled={loading}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={loading || !canWrite || isReadOnly}
+                  className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                 >
                   {Object.entries(TASK_CHANNEL_LABELS).map(([key, label]) => (
                     <option key={key} value={key}>
@@ -353,8 +373,8 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
                       ? "+1234567890"
                       : "https://example.com"
                   }
-                  disabled={loading}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={loading || !canWrite || isReadOnly}
+                  className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                 />
               </div>
             </div>
@@ -368,10 +388,10 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
                 value={formData.title}
                 onChange={(e) => handleChange("title", e.target.value)}
                 placeholder="Enter task title"
-                disabled={loading}
+                disabled={loading || !canWrite || isReadOnly}
                 className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   errors.title ? "border-red-500" : "border-gray-300"
-                }`}
+                } ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
               />
               {errors.title && (
                 <p className="mt-1 text-sm text-red-600">{errors.title}</p>
@@ -387,8 +407,8 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
                 onChange={(e) => handleChange("description", e.target.value)}
                 placeholder="Enter task description (optional)"
                 rows={3}
-                disabled={loading}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                disabled={loading || !canWrite || isReadOnly}
+                className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
               />
             </div>
 
@@ -401,8 +421,8 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
                 type="date"
                 value={formData.dueDate}
                 onChange={(e) => handleChange("dueDate", e.target.value)}
-                disabled={loading}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={loading || !canWrite || isReadOnly}
+                className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
               />
             </div>
 
@@ -417,23 +437,23 @@ function CreateTaskModal({ isOpen, onClose, onSuccess, existingTask = null }) {
                     value={formData.metadataKey}
                     onChange={(e) => handleChange("metadataKey", e.target.value)}
                     placeholder="Key (e.g., invoiceId)"
-                    disabled={loading}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    disabled={loading || !canWrite || isReadOnly}
+                    className={`flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                   />
                   <input
                     type="text"
                     value={formData.metadataValue}
                     onChange={(e) => handleChange("metadataValue", e.target.value)}
                     placeholder="Value (e.g., INV-12345)"
-                    disabled={loading}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    disabled={loading || !canWrite || isReadOnly}
+                    className={`flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                   />
                   <Button
                     type="button"
                     variant="outline"
                     onClick={handleAddMetadata}
                     disabled={
-                      loading || !formData.metadataKey || !formData.metadataValue
+                      loading || !formData.metadataKey || !formData.metadataValue || !canWrite || isReadOnly
                     }
                   >
                     Add

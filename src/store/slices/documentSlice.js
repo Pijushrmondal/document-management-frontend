@@ -23,9 +23,9 @@ const initialState = {
 
 export const fetchDocuments = createAsyncThunk(
     'documents/fetchAll',
-    async ({ page = 1, limit = 20 } = {}, { rejectWithValue }) => {
+    async ({ page = 1, limit = 20, userId = null } = {}, { rejectWithValue }) => {
         try {
-            const response = await documentService.getAll(page, limit);
+            const response = await documentService.getAll(page, limit, userId);
             return response;
         } catch (error) {
             return rejectWithValue(error.message || 'Failed to fetch documents');

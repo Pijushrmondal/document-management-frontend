@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { deleteTask } from "../../store/slices/taskSlice";
+import { selectUser } from "../../store/slices/authSlice";
+import { Permissions } from "../../utils/permissions";
 import Badge from "../common/Badge";
 import ConfirmDialog from "../common/ConfirmDialog";
 import { formatDate } from "../../utils/formatters";
@@ -8,8 +10,12 @@ import { TASK_PRIORITIES } from "../../utils/constants";
 
 function TaskCard({ task, onEdit, onView, isDragging = false }) {
   const dispatch = useDispatch();
+  const user = useSelector(selectUser);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Check permissions
+  const canWrite = user && Permissions.canWrite(user.role);
 
   const handleDelete = async (e) => {
     if (e && e.stopPropagation) {
@@ -79,22 +85,24 @@ function TaskCard({ task, onEdit, onView, isDragging = false }) {
           <h4 className="text-sm font-semibold text-gray-900 flex-1 line-clamp-2">
             {task.title}
           </h4>
-          <div className="flex gap-1 ml-2">
-            <button
-              onClick={handleEditClick}
-              className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
-              title="Edit"
-            >
-              ✏️
-            </button>
-            <button
-              onClick={handleDeleteClick}
-              className="p-1 text-gray-400 hover:text-red-600 transition-colors"
-              title="Delete"
-            >
-              🗑️
-            </button>
-          </div>
+          {canWrite && (
+            <div className="flex gap-1 ml-2">
+              <button
+                onClick={handleEditClick}
+                className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+                title="Edit"
+              >
+                ✏️
+              </button>
+              <button
+                onClick={handleDeleteClick}
+                className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+                title="Delete"
+              >
+                🗑️
+              </button>
+            </div>
+          )}
         </div>
 
         {task.description && (

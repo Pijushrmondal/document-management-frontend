@@ -72,9 +72,9 @@ export const deleteTag = createAsyncThunk(
 
 export const fetchFolders = createAsyncThunk(
     'tags/fetchFolders',
-    async (_, { rejectWithValue }) => {
+    async (userId = null, { rejectWithValue }) => {
         try {
-            const response = await tagService.getFolders();
+            const response = await tagService.getFolders(userId);
             return response;
         } catch (error) {
             return rejectWithValue(error.message || 'Failed to fetch folders');

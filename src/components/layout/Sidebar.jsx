@@ -4,6 +4,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { selectSidebarOpen, setSidebarOpen } from "../../store/slices/uiSlice";
 import { selectUser } from "../../store/slices/authSlice";
+import { Permissions } from "../../utils/permissions";
 
 function Sidebar() {
   const dispatch = useDispatch();
@@ -24,55 +25,70 @@ function Sidebar() {
       path: "/dashboard",
       icon: "📊",
       roles: null, // All roles
+      canView: () => true,
     },
     {
       name: "Documents",
       path: "/documents",
       icon: "📄",
       roles: null,
+      canView: () => true,
     },
     {
       name: "Folders",
       path: "/folders",
       icon: "📁",
       roles: null,
+      canView: () => true,
     },
     {
       name: "Actions",
       path: "/actions",
       icon: "🤖",
       roles: null,
+      // Only users and admins can run actions
+      canView: () => user?.role && Permissions.canRunActions(user.role),
     },
     {
       name: "Tasks",
       path: "/tasks",
       icon: "✅",
       roles: null,
+      canView: () => true,
     },
     {
       name: "Webhooks",
       path: "/webhooks",
       icon: "🔗",
-      // roles: ["admin", "support"],
-      roles: null, // All roles can view their audit logs
+      roles: null,
+      // All roles can view webhooks
+      canView: () => user?.role ? Permissions.canViewWebhooks(user.role) : true,
     },
     {
       name: "Audit Logs",
       path: "/audit",
       icon: "📝",
-      roles: null, // All roles can view their audit logs
+      roles: null,
+      // All roles can view audit logs
+      canView: () => user?.role ? Permissions.canViewAudit(user.role) : true,
     },
     {
       name: "Metrics",
       path: "/metrics",
       icon: "📈",
       roles: null,
-      // roles: [USER_ROLES.ADMIN, USER_ROLES.USER], // Available to all
+      // All roles can view metrics
+      canView: () => user?.role ? Permissions.canViewMetrics(user.role) : true,
     },
   ];
 
-  // Filter navigation based on user role
+  // Filter navigation based on user role and permissions
   const filteredNavigation = navigation.filter((item) => {
+    // Check custom canView function if provided
+    if (item.canView) {
+      return item.canView();
+    }
+    // Fallback to role-based filtering
     if (!item.roles) return true;
     return item.roles.includes(user?.role);
   });
