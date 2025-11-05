@@ -56,21 +56,21 @@ function Sidebar() {
       roles: null,
       canView: () => true,
     },
-    {
-      name: "Webhooks",
-      path: "/webhooks",
-      icon: "🔗",
-      roles: null,
-      // All roles can view webhooks
-      canView: () => user?.role ? Permissions.canViewWebhooks(user.role) : true,
-    },
+    // {
+    //   name: "Webhooks",
+    //   path: "/webhooks",
+    //   icon: "🔗",
+    //   roles: null,
+    //   // All roles can view webhooks
+    //   canView: () => user?.role ? Permissions.canViewWebhooks(user.role) : true,
+    // },
     {
       name: "Audit Logs",
       path: "/audit",
       icon: "📝",
       roles: null,
       // All roles can view audit logs
-      canView: () => user?.role ? Permissions.canViewAudit(user.role) : true,
+      canView: () => (user?.role ? Permissions.canViewAudit(user.role) : true),
     },
     {
       name: "Metrics",
@@ -78,7 +78,8 @@ function Sidebar() {
       icon: "📈",
       roles: null,
       // All roles can view metrics
-      canView: () => user?.role ? Permissions.canViewMetrics(user.role) : true,
+      canView: () =>
+        user?.role ? Permissions.canViewMetrics(user.role) : true,
     },
   ];
 
